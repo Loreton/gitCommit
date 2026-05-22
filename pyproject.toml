@@ -22,7 +22,7 @@ dev = [
 
 [project.scripts]
 # gitCommit = "gitcommit.main_base:main"
-gitCommit = "gitcommit.main:main"
+gitcommit = "gitcommit.main:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
