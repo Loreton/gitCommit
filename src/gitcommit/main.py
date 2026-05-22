@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 19-05-2026 20.19.49
+# Date .........: 22-05-2026 16.35.23
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -102,10 +102,9 @@ def main():
     gv.args     = args
     gv.fExecute = args.go
 
-    gv.logger.setNameLength(len=args.log_name_length)
+    gv.logger.setNameLength(dynamic=False, length=args.log_name_length)
     gv.logger.setShowCaller(show_caller=args.log_show_caller)
     gv.logger.setLinenoLength(len=4)
-    gv.logger.setDynNameLength(dynamic=True)
 
     if args.list_commands:
         commands = helpCommands()
