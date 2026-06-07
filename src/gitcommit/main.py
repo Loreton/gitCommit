@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 22-05-2026 16.35.23
+# Date .........: 07-06-2026 20.04.41
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -139,16 +139,21 @@ def main():
         gv.logger.info("")
         gv.logger.notify("="*50)
         gv.logger.notify(f"gitROOT: {parent}/{C.yellow}{dirname}")
+
         if fCommit:
-            commandsList = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-            gv.logger.notify("=== start Command list ===")
             if args.go:
+                commandsList = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
+                gv.logger.notify("=== start Command list ===")
                 executeCommands(fExecute=True)
 
             else:
+                commandsList = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
                 executeCommands(fExecute=False)
+
                 choice=keyboardPrompt(text_msg="enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
                 if choice.startswith("--go"):
+                    ### devo rifare il processo perché alcuni file potrebbero andare modificati
+                    commandsList = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
                     executeCommands(fExecute=True)
                 else:
                     continue
