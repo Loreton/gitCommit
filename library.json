@@ -1,0 +1,18 @@
+{
+  "name": "gitCommit",
+  "version": "0.0.1",
+  "description": "git commit con aggiornamento di pyproject.toml e library.json e CHANGELOG.md",
+  "keywords": [
+    "gitcommit"
+  ],
+  "authors": [
+    {
+      "name": "Loreto",
+      "email": "loreton@email.com"
+    }
+  ],
+  "license": "None",
+  "build": {
+    "flags": ""
+  }
+}

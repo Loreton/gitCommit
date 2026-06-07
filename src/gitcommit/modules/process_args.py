@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 18-05-2026 19.23.40
+# Date .........: 07-06-2026 19.55.36
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -11,10 +11,11 @@ import re
 import json
 
 ### - project modules
-from pyLnLib import  gVars as gv
-from .get_last_tag import  get_last_tag
-from .change_log import  generate_changelog
-from .update_library import  update_library
+from pyLnLib           import  gVars as gv
+from .get_last_tag     import  get_last_tag
+from .change_log       import  generate_changelog
+from .update_library   import  update_library
+from .update_pyproject import  update_pyproject
 
 
 ###################################################
@@ -121,6 +122,10 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
                 updated = update_library(version=version, fExecute=args.go, gitRoot=gitRoot)
                 if updated and fCommit:
                     cmdList.append("git add library.json")
+
+                updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=gitRoot)
+                if updated and fCommit:
+                    cmdList.append("git add pyproject.toml")
 
                 cmd = f'git tag -a "{new_tag}"'
                 if fNewVersion: cmd = f'{cmd} -m "Release {version}"'
