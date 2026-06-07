@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = [
+    "setuptools>=68",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gitCommit"
-version = "0.1.0"
+version = "0.1.3"
 description = ""
 readme = "README.md"
 requires-python = ">=3.14"
-
 dependencies = [
     "pylnlib",
     "pyyaml>=6.0.3",
@@ -22,14 +23,16 @@ dev = [
 ]
 
 [project.scripts]
-# gitCommit = "gitcommit.main_base:main"
 gitcommit = "gitcommit.main:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = [
+    "src",
+]
 
 [tool.ruff]
 line-length = 100
 
-[tool.uv.sources]
-pylnlib = { path = "../pyLnLib", editable = true }
+[tool.uv.sources.pylnlib]
+path = "../pyLnLib"
+editable = true

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 07-06-2026 20.04.41
+# Date .........: 07-06-2026 20.07.29
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -153,6 +153,7 @@ def main():
                 choice=keyboardPrompt(text_msg="enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
                 if choice.startswith("--go"):
                     ### devo rifare il processo perché alcuni file potrebbero andare modificati
+                    args.go = True ### forcing
                     commandsList = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
                     executeCommands(fExecute=True)
                 else:
