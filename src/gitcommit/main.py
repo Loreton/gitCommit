@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 07-06-2026 20.07.29
+# Date .........: 09-06-2026 18.49.25
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -12,10 +12,7 @@ from pathlib import Path
 
 ### - project modules
 from pyLnLib           import lnLogger,  Color as C, lnRun, gVars as gv, keyboardPrompt
-from gitcommit.modules           import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
-
-
-
+from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
 
 
 def is_git_repo(path):
@@ -46,7 +43,7 @@ def scan_repos_recursively_01(base_path: str) -> list:
 
         repo_list.append(root)
 
-        commit, push = gitStatus(root, show_log=True)
+        commit, push = gitStatus(git_dir=root)
         if commit or push:
             # Non scendere nei sottofolder se repo "attivo" (evita repo annidati)
             dirs.clear()
@@ -78,7 +75,7 @@ def scan_repos_recursively(base_path: str) -> list:
 
         repo_list.append(root)
 
-        commit, push = gitStatus(root, show_log=True)
+        commit, push = gitStatus(git_dir=root)
         if commit or push:
             dirs.clear()
 
@@ -134,7 +131,7 @@ def main():
         dirname=Path(gitROOT).stem
         parent=Path(gitROOT).parent
 
-        fCommit, fPush = gitStatus(gitROOT, show_log=True)
+        fCommit, fPush = gitStatus(git_dir=gitROOT)
 
         gv.logger.info("")
         gv.logger.notify("="*50)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 18-05-2026 10.02.55
+# Date .........: 09-06-2026 18.51.14
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -11,35 +11,10 @@ from pathlib import Path
 import json
 
 ### - project modules
-from pyLnLib import  gVars as gv, lnRun, Color as C, DummyPrintLogger
+import pyLnLib as lnLib
+# from pyLnLib import  gVars as gv, Color as C
 
-###################################################
-#
-###################################################
-# def getGitRoot():
-#     rcode, stdout, stderr = lnRun(
-#         "git rev-parse --show-toplevel",
-#         fExecute=True,
-#         toLogger=gv.logger,
-#         stacklevel=2
-#     )
-#     return stdout.strip()
-
-
-# ###################################################
-# #
-# ###################################################
-# def get_last_tag(gitRoot: str):
-#     rcode, stdout, stderr = lnRun("git describe --tags --abbrev=0",
-#                                     fExecute=True,
-#                                     cwd=gitRoot,
-#                                     toLogger=gv.logger,
-#                                     stacklevel=2
-#                                 )
-
-#     tag = stdout.strip()
-
-#     return tag if tag else "v0.0.0"
+# gv     = lnLib.gVars
 
 
 ######################################################
@@ -47,19 +22,24 @@ from pyLnLib import  gVars as gv, lnRun, Color as C, DummyPrintLogger
 #   True:  something to commit
 #   False: nothing to commit
 ######################################################
-def gitStatus(path: str, show_log: bool=True, logger=gv.logger):
+# def gitStatus(path: str, logger=lnLib.gVars.logger, show_log: bool=True):
+def gitStatus(git_dir: str):
+    C      = lnLib.Color
+    logger = lnLib.gVars.logger
     ###- read git status
-    # logger = DummyPrintLogger() if no_log else gv.logger
-    logger = DummyPrintLogger() if not show_log else gv.logger
-    rcode, stdout, stderr = lnRun("git status", cwd=path, fExecute=True, toLogger=logger, stacklevel=0)
+    # logger = lnLib.DummyPrintLogger() if not show_log else gv.logger
+    rcode, stdout, stderr = lnLib.lnRun("git status", cwd=git_dir, fExecute=True, toLogger=logger, stacklevel=0)
     commit = True
     push = False
 
     if rcode:
-        print(f"\t{C.redH}ERROR! on path: {path}{C.reset}")
+        print(f"\t{C.redH}ERROR! on path: {git_dir}{C.reset}")
         print(f"\t{C.redH}{stdout}{C.reset}")
         print(f"\t{C.redH}{stderr}{C.reset}")
         sys.exit(1)
+    else:
+        for line in stdout.splitlines():
+            logger.info(line, color=C.blue)
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:
