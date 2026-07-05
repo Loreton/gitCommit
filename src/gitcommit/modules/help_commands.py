@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 29-03-2026 08.48.48
+# Date .........: 05-07-2026 14.43.32
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -9,8 +9,8 @@ import sys; sys.dont_write_bytecode = True
 
 
 ### - project modules
-from pyLnLib import   Color as C
-
+from pyLnLib import get_colors
+C=get_colors()
 
 ###################################################
 # ---- git command list ----
@@ -18,7 +18,7 @@ from pyLnLib import   Color as C
 def helpCommands():
     ob='{'
     cb='}'
-    dollar='$'
+    _dollar='$'
     varBR=f'{ob}BR{cb}'
     varoldname=f'{ob}oldName{cb}'
     varnewname=f'{ob}newName{cb}'
@@ -74,8 +74,3 @@ def helpCommands():
         --------------------------------------------------
     '''
     return commands
-
-
-
-
-

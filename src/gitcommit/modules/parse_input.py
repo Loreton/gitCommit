@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 18-05-2026 18.26.41
+# Date .........: 05-07-2026 14.43.11
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -9,7 +9,8 @@ import argparse
 
 
 ### - project modules
-from pyLnLib import   Color as C
+from pyLnLib import get_colors
+C=get_colors()
 
 # ##################################################
 # # parseInput
@@ -64,7 +65,7 @@ def parseInput():
     if args.display_args:
         import json
         json_data = json.dumps(vars(args), indent=4, sort_keys=True)
-        print('\tinput arguments: {json_data}'.format(**locals()))
+        print(f'\tinput arguments: {json_data}'.format(**locals()))
         sys.exit(0)
 
 
@@ -76,5 +77,3 @@ def parseInput():
         sys.exit(0)
 
     return args
-
-

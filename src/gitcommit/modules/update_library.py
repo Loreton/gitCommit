@@ -5,14 +5,14 @@
 #
 
 import sys; sys.dont_write_bytecode = True
-from datetime import datetime
+# from datetime import datetime
 from pathlib import Path
 
 import json
 
 ### - project modules
-from pyLnLib import  gVars as gv, lnRun
-
+from pyLnLib import  get_logger
+logger=get_logger()
 
 
 ###################################################
@@ -21,7 +21,7 @@ from pyLnLib import  gVars as gv, lnRun
 def update_library(version: str, fExecute: bool, gitRoot: str):
     # LIBRARY_FILE = gitRoot / "library.json"
 
-    library_json = Path(gitRoot / "library.json")
+    library_json = Path(gitRoot) / "library.json"
 
     if library_json.exists():
         with open(library_json, "r", encoding="utf-8") as f:
@@ -33,14 +33,14 @@ def update_library(version: str, fExecute: bool, gitRoot: str):
             with open(library_json, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
                 f.write("\n")
-            gv.logger.info("file: 'library.json' aggiornato: %s → %s",  cur_version, version)
+            logger.info("file: 'library.json' aggiornato: %s → %s",  cur_version, version)
         else:
             # Dry-run: preview colorata
-            gv.logger.info("library.json preview (dry-run):")
-            gv.logger.info("  cur_version: %s", cur_version)
-            gv.logger.info("  new_version: %s", version)
+            logger.info("library.json preview (dry-run):")
+            logger.info("  cur_version: %s", cur_version)
+            logger.info("  new_version: %s", version)
 
     else:
-        gv.logger.warning("file 'library.json' NOT found, skip.")
+        logger.warning("file 'library.json' NOT found, skip.")
         return False
     return True

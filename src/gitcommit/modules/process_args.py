@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 07-06-2026 19.55.36
+# Date .........: 05-07-2026 16.21.33
 #
 
 import sys; sys.dont_write_bytecode = True
 # from datetime import datetime
 # from pathlib import Path
 import re
-import json
+# import json
 
 ### - project modules
-from pyLnLib           import  gVars as gv
+from pyLnLib           import  gVars as ctx, get_logger
 from .get_last_tag     import  get_last_tag
 from .change_log       import  generate_changelog
 from .update_library   import  update_library
 from .update_pyproject import  update_pyproject
+
+logger=get_logger()
 
 
 ###################################################
@@ -44,7 +46,7 @@ def validate(version):
 #
 ###################################################
 def processVersion(last_tag: str):
-    args = gv.args
+    args = ctx.args
 
     # ----------------------------
     # - determina versione
@@ -77,8 +79,8 @@ def processVersion(last_tag: str):
 ###################################################
 #
 ###################################################
-def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
-    args = gv.args
+def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> tuple[list, str]:
+    args = ctx.args
     cmdList=[]
 
     # ----------------------------
@@ -90,7 +92,8 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
         from datetime import datetime
         fPush=fCommit
         now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-        args.description=f"update on {now}" ### force
+        # args.description=f"update on {now}" ### force
+        commit_description: str =f"update on {now}" ### force
 
     else:
         """ ignoriamo la versione e facciamo solo commit e push di tutto quello che c'è da fare... """
@@ -98,7 +101,8 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
         new_tag = last_tag
         fNewVersion, version = processVersion(last_tag)
         new_tag = f"v{version}"
-        args.description=f"{args.description} (Release {version})"
+        # args.description=f"{args.description} (Release {version})"
+        commit_description=f"{args.description} (Release {version})"
 
         # ----------------------------
         # - changelog
@@ -114,8 +118,8 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
         # ----------------------------
         if args.tag:
             if new_tag == last_tag:
-                gv.logger.warning("Stai chiedendo il tag ma non è stato richiesto alcun incremento per la versione.")
-                gv.logger.warning("L'opzione verrà ignorata!")
+                logger.warning("Stai chiedendo il tag ma non è stato richiesto alcun incremento per la versione.")
+                logger.warning("L'opzione verrà ignorata!")
                 args.tag = False
             else:
                 # ---- update library.json ----
@@ -131,9 +135,9 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
                 if fNewVersion: cmd = f'{cmd} -m "Release {version}"'
                 cmdList.append(cmd)
 
-            gv.logger.notify("=== RELEASE PLAN ===")
-            gv.logger.info("Last tag: %s", last_tag)
-            gv.logger.info("new  tag: %s", new_tag)
+            logger.notify("=== RELEASE PLAN ===")
+            logger.info("Last tag: %s", last_tag)
+            logger.info("new  tag: %s", new_tag)
 
     # ----------------------------
     # - push
@@ -148,10 +152,11 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> list:
     # ----------------------------
     # - commit ----
     # ----------------------------
-    if fCommit:
-        cmd = f'git commit -m "{args.description}"'
-        cmdList.insert(0, cmd)
-        cmdList.insert(0, "git add .")
+    # if fCommit:
+        # cmd = f'git commit -m "{args.description}"'
+        # cmd = f'git commit -m "{commit_description}"'
+        # cmdList.insert(0, cmd)
+        # cmdList.insert(0, "git add .")
 
 
-    return cmdList
+    return cmdList, commit_description

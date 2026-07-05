@@ -8,7 +8,8 @@ import sys; sys.dont_write_bytecode = True
 from pathlib import Path
 
 ### - project modules
-from pyLnLib import  gVars as gv
+from pyLnLib import  get_logger
+logger = get_logger()
 
 
 
@@ -16,14 +17,14 @@ from pyLnLib import  gVars as gv
 # ---- update pyproject.toml ----
 ###################################################
 def update_pyproject(new_version: str, fExecute: bool, gitRoot: str):
-    pyproject = gitRoot / "pyproject.toml"
+    pyproject = Path(gitRoot) / "pyproject.toml"
 
     if pyproject.exists():
         import tomllib, tomli_w
         with open(pyproject, "rb") as f:
             data = tomllib.load(f)
 
-        if not "project" in data:
+        if "project" not in data:
             data["project"] = dict()
         cur_version = data["project"].get("version", "0.0.0")
         data["project"]["version"] = new_version
@@ -33,12 +34,12 @@ def update_pyproject(new_version: str, fExecute: bool, gitRoot: str):
                 tomli_w.dump(data, fp)
         else:
             # Dry-run: preview colorata
-            gv.logger.info("pyproject.toml preview (dry-run):")
-            gv.logger.info("  cur_version: %s", cur_version)
-            gv.logger.info("  new_version: %s", new_version)
+            logger.info("pyproject.toml preview (dry-run):")
+            logger.info("  cur_version: %s", cur_version)
+            logger.info("  new_version: %s", new_version)
 
     else:
-        gv.logger.warning("file 'pyproject.toml' NOT found, skipping.")
+        logger.warning("file 'pyproject.toml' NOT found, skipping.")
         return False
 
     return True

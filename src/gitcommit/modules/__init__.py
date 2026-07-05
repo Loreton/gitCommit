@@ -16,4 +16,14 @@ from .get_last_tag          import get_last_tag
 from .git_status            import gitStatus
 from .help_commands         import helpCommands
 
-# __all__ = ['getGitRoot', 'processArgs', 'parseInput', 'gitStatus', 'helpCommands']
+__all__ = [
+    'getGitRoot',
+    'processArgs',
+    'parseInput',
+    'gitStatus',
+    'helpCommands',
+    'generate_changelog',
+    'update_library',
+    'update_pyproject',
+    'get_last_tag',
+]

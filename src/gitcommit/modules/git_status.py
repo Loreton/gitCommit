@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 09-06-2026 18.51.14
+# Date .........: 05-07-2026 15.38.47
 #
 
 import sys; sys.dont_write_bytecode = True
-from datetime import datetime
-from pathlib import Path
+# from datetime import datetime
+# from pathlib import Path
 
-import json
+# import json
 
 ### - project modules
-import pyLnLib as lnLib
-# from pyLnLib import  gVars as gv, Color as C
-
-# gv     = lnLib.gVars
+from pyLnLib import get_logger, get_colors, lnRun
+C=get_colors()
+logger=get_logger()
 
 
 ######################################################
@@ -24,11 +23,9 @@ import pyLnLib as lnLib
 ######################################################
 # def gitStatus(path: str, logger=lnLib.gVars.logger, show_log: bool=True):
 def gitStatus(git_dir: str):
-    C      = lnLib.Color
-    logger = lnLib.gVars.logger
-    ###- read git status
-    # logger = lnLib.DummyPrintLogger() if not show_log else gv.logger
-    rcode, stdout, stderr = lnLib.lnRun("git status", cwd=git_dir, fExecute=True, toLogger=logger, stacklevel=0)
+    print()
+    logger.info("working on dir: %s", git_dir, color=C.whiteH)
+    rcode, stdout, stderr = lnRun("git status", cwd=git_dir, fExecute=True, stacklevel=0)
     commit = True
     push = False
 
@@ -43,23 +40,17 @@ def gitStatus(git_dir: str):
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:
-        logger.info("some commits must be pushed!")
+        logger.info("some commits must be pushed!", color=C.yellowH)
         push = True
 
     if "nothing to commit" in stdout:
-        logger.info("no changes occurred!")
+        logger.info("no commit necessary!")
         commit = False
 
     elif "Changes not staged for commit" in stdout or "Untracked file" in stdout or "git add" in stdout:
-        logger.info(f"some changes occurred!")
+        logger.info("some changes occurred!", color=C.yellowH)
         commit = True
 
-
-    logger.info("commit: %s - Push: %s", commit, push)
+    if commit or push:
+        logger.info("commit: %s - Push: %s", commit, push)
     return commit, push
-
-
-
-
-
-

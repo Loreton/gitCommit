@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 18-05-2026 19.22.21
+# Date .........: 05-07-2026 15.01.16
 #
 
 import sys; sys.dont_write_bytecode = True
 from datetime import datetime
+from pathlib import Path
 
 ### - project modules
 from .get_last_tag import get_last_tag
-from pyLnLib import  gVars as gv, lnRun
+from pyLnLib import  get_logger, lnRun
+logger=get_logger()
 
 ###################################################
 # ---- changelog avanzato ----
 ###################################################
 def generate_changelog(version: str, fExecute: bool, gitRoot: str):
-    changelog_path = gitRoot / "CHANGELOG.md"
+    changelog_path = Path(gitRoot) / "CHANGELOG.md"
     last_tag = "v0.0.0"
 
     # trova ultimo tag nel changelog
@@ -33,11 +35,11 @@ def generate_changelog(version: str, fExecute: bool, gitRoot: str):
     log_range = "HEAD"
 
     # prendi commit reali (no merge) e filtra release/chore/docs
-    rcode, stdout, stderr = lnRun(f'git log {log_range} --pretty=format:"%s" --no-merges', cwd=gitRoot, fExecute=True, toLogger=gv.logger)
+    _rcode, stdout, _stderr = lnRun(f'git log {log_range} --pretty=format:"%s" --no-merges', cwd=gitRoot, fExecute=True)
     commits_raw = stdout.splitlines()
 
     if not commits_raw:
-        gv.logger.info("Nessun commit rilevante per il changelog.")
+        logger.info("Nessun commit rilevante per il changelog.")
         return False
 
     features, fixes = [], []
@@ -53,7 +55,7 @@ def generate_changelog(version: str, fExecute: bool, gitRoot: str):
             fixes.append(c.strip())
 
     if not features and not fixes:
-        gv.logger.info("Nessun commit rilevante dopo filtro, skip changelog.")
+        logger.info("Nessun commit rilevante dopo filtro, skip changelog.")
         return False
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -66,13 +68,12 @@ def generate_changelog(version: str, fExecute: bool, gitRoot: str):
 
     if not fExecute:
         # preview colorata
-        gv.logger.notify("=== CHANGELOG.md preview ===")
+        logger.notify("=== CHANGELOG.md preview ===")
         for line in new_section.splitlines():
-            gv.logger.info(line)
+            logger.info(line)
     else:
         old_content = changelog_path.read_text(encoding="utf-8") if changelog_path.exists() else ""
         changelog_path.write_text(new_section + old_content, encoding="utf-8")
-        gv.logger.notify("CHANGELOG.md aggiornato.")
+        logger.notify("CHANGELOG.md aggiornato.")
 
     return True
-

@@ -1,23 +1,22 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 05-07-2026 20.03.16
+# Date .........: 05-07-2026 14.54.26
 #
 
-import sys
-
-from pyLnLib.context import get_project_vars; sys.dont_write_bytecode = True
+import pdb
+import sys; sys.dont_write_bytecode = True
 import os
 
 from pathlib import Path
-# from datetime import datetime
+from datetime import datetime
 
 
 ### - project modules
-from pyLnLib           import get_logger, get_colors, get_project_vars, lnRun, gVars as ctx, keyboardPrompt
+# from pyLnLib           import lnLogger,  Color as C, lnRun, gVars as gv, keyboardPrompt
+from pyLnLib           import get_logger, get_colors, lnRun, gVars as ctx, keyboardPrompt
 C=get_colors()
 logger=get_logger()
-prjVars=get_project_vars(init=True)
 
 from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
 
@@ -90,12 +89,6 @@ def scan_repos_recursively(base_path: str) -> list:
     return repo_list
 
 
-def executeCommit(gitROOT: str, commandsList: list[str], commit_description: str|None=None, fExecute: bool=False):
-    commandsList.insert(0, f"git commit -m '{commit_description}'")
-    commandsList.insert(0, "git add .")
-    logger.notify("=== start Command list ===")
-    for cmd in commandsList:
-        lnRun(cmd, fExecute=fExecute, cwd=gitROOT, timeout=300)
 
 
 
@@ -103,13 +96,12 @@ def executeCommit(gitROOT: str, commandsList: list[str], commit_description: str
 #  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -
 #################################################################
 def main():
-    # def executeCommands(fExecute: bool=False):
-    #     for cmd in commandsList:
-    #         lnRun(cmd, fExecute=fExecute, cwd=gitROOT, timeout=300)
+    def executeCommands(fExecute: bool=False):
+        for cmd in commandsList:
+            lnRun(cmd, fExecute=fExecute, cwd=gitROOT, timeout=300)
 
     args        = parseInput()
-    ctx.args=args
-    prjVars.input_args=vars(args) # type: ignore
+    ctx.args     = args
 
     logger.setNameLength(dynamic=False, length=args.log_name_length)
     logger.setShowCaller(show_caller=args.log_show_caller)
@@ -134,7 +126,7 @@ def main():
 
     else:
         rootDirs.append(Path(getGitRoot()))
-        rootDirs.append(os.path.expandvars('${ln_PY_LNLIB_DIR}')) # must be last
+        rootDirs.append(os.path.expandvars('${ln_PY_LNLIB_DIR}'))
 
     if not rootDirs:
         logger.warning("🚀 no directories with .git folder in subfolders found!")
@@ -148,10 +140,8 @@ def main():
     if choice[0] != "c":
         return
 
-    # now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-    primary_project_description: str|None = None
-    primary_project_name: str|None = None
-    for i, gitROOT in enumerate(rootDirs, 1):
+    now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+    for gitROOT in rootDirs:
         prj_name=Path(gitROOT).stem
         parent=Path(gitROOT).parent
 
@@ -161,33 +151,41 @@ def main():
         logger.notify("="*50)
         logger.notify(f"gitROOT: {parent}/{C.yellow}{prj_name}")
 
-        if not args.scan:
-            if prj_name == 'pyLnLib':
-                commit_description = f"{primary_project_name}: {primary_project_description}"
+        # if args.scan:
+        #     commit_description = f"update on {now}"
+        # else:
+        #     commit_description = args.description
 
         if fCommit:
             if args.go:
                 commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-                executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=True)
+                commandsList.insert(0, f"git commit -m '{commit_description}'")
+                commandsList.insert(0, "git add .")
+                logger.notify("=== start Command list ===")
+                executeCommands(fExecute=True)
 
             else:
                 commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-                executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=False)
+                commandsList.insert(0, f"git commit -m '{commit_description}'")
+                commandsList.insert(0, "git add .")
+                executeCommands(fExecute=False)
+
                 choice=keyboardPrompt(text_msg="enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
                 if choice[0] == "--go":
+                    args.go = True ### forcing
                     '''devo di nuovo processare, prima di procedereffettivamente,
                         perché alcuni file potrebbero essere stati modificati
                         (CHANGELOG.MD o pyproject.toml, o altri)'''
-
                     commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-                    executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=True)
+                    commandsList.insert(0, f"git commit -m '{commit_description}'")
+                    commandsList.insert(0, "git add .")
+                    executeCommands(fExecute=True)
+                else:
+                    continue
 
         else:
             logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 nothing to do!",  color=C.green)
 
-        if i == 1:
-            primary_project_name = prj_name
-            primary_project_description = commit_description
 
 
 if __name__ == "__main__":
