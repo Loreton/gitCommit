@@ -23,9 +23,9 @@ logger=get_logger()
 #   True:  something to commit
 #   False: nothing to commit
 ######################################################
-# def gitStatus(path: str, logger=lnLib.gVars.logger, show_log: bool=True):
-def gitStatus(project_name: str, project_dir: str|Path):
-    print()
+def gitStatus(project_name: str, project_dir: str|Path, logger_level: str="warning"):
+    saved_logger_level = logger.getConsoleLoggerLevel()
+    logger.setConsoleLoggerLevel(logger_level)
     logger.debug("working on dir: %s", project_dir, color=C.whiteH)
     rcode, stdout, stderr = lnRun("git status", cwd=project_dir, fExecute=True, stacklevel=0)
     commit = True
@@ -38,21 +38,25 @@ def gitStatus(project_name: str, project_dir: str|Path):
         sys.exit(1)
     else:
         for line in stdout.splitlines():
-            logger.info(line, color=C.blue)
+            logger.debug(line, color=C.blue)
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:
-        logger.info("some commits must be pushed!", color=C.yellowH)
+        logger.debug("some commits must be pushed!", color=C.yellowH)
         push = True
 
     if "nothing to commit" in stdout:
-        logger.info("no commit necessary!")
+        logger.debug("no commit necessary!")
         commit = False
 
     elif "Changes not staged for commit" in stdout or "Untracked file" in stdout or "git add" in stdout:
-        logger.info("some changes occurred!", color=C.yellowH)
+        logger.debug("some changes occurred!", color=C.yellowH)
         commit = True
 
     if commit or push:
-        logger.info("commit: %s - Push: %s", commit, push)
+        logger.debug("commit: %s - Push: %s", commit, push)
+    else:
+        logger.debug("no commit necessary!")
+
+    logger.setConsoleLoggerLevel(saved_logger_level)
     return commit, push

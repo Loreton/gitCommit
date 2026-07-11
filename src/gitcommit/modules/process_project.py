@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 10-07-2026 14.32.19
+# Date .........: 11-07-2026 17.31.11
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -112,15 +112,21 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> tuple[list, str]:
 ###################################################
 # ---- update pyproject.toml ----
 ###################################################
-def process_single_project(project_name: str, project_dir: Path|str) -> None:
+def process_project(project_name: str, project_dir: Path|str) -> None:
     # prj_name = Path(project_dir).stem
     parent = Path(project_dir).parent
 
-    logger.info("")
-    logger.notify("="*50)
-    logger.notify("project_name: %s, project_dir: %s/", project_name, project_dir)
+    print()
+    logger.notify("-"*50)
+    # logger.notify("project_name: %s, project_dir: %s/", project_name, project_dir)
+    logger.notify(f"project_name: {C.yellow}%s{C.reset}", project_name)
+    logger.notify("project_dir: %s/",project_dir)
 
-    fCommit, fPush = gitStatus(project_name=project_name, project_dir=project_dir)
+    # logger.setConsoleLoggerLevel("warning")
+    # logger.getConsoleLoggerLevel()
+    fCommit, fPush = gitStatus(project_name=project_name, project_dir=project_dir, logger_level="warning")
+    if fCommit or fPush:
+        logger.info("commit: %s - Push: %s", fCommit, fPush)
     return
 
     commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=project_dir)

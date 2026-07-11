@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 11-07-2026 15.45.14
+# Date .........: 11-07-2026 17.33.07
 #
 
 import sys
@@ -24,7 +24,8 @@ C=get_colors()
 prjVars=get_project_vars()
 logger=get_logger()
 
-from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
+# from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
+from gitcommit.modules import parseInput, process_project, getGitRoot
 
 
 def is_git_repo(path):
@@ -174,24 +175,25 @@ def main():
     rootDirs = []
     if args.scan:
         for prj_name, prj_dir in prjVars.git_project_dirs.items():
-            import pdb; pdb.set_trace();  # by Loreto
-            process_single_project(project_dir=prj_dir)
+            process_project(project_name=prj_name, project_dir=prj_dir)
 
-        """ scan for git projects recursively in the current directory and in the git repo directory"""
-        rootDirs.extend(scan_repos_recursively(prj_top_dir))
-        rootDirs.extend(scan_repos_recursively(git_repo_dir))
-        if confirm_dirs(rootDirs):
-            process_scanned_dirs(rootDirs)
-        else:
-            sys.exit(0)
-    else:
-        """ use the current directory and the pyLnLib directory as the root directories"""
-        rootDirs.append(pyLnLib_path)
-        rootDirs.append(prj_repo_dir)
-        if confirm_dirs(rootDirs):
-            process_this_project(rootDirs)
-        else:
-            sys.exit(0)
+
+
+    #     """ scan for git projects recursively in the current directory and in the git repo directory"""
+    #     rootDirs.extend(scan_repos_recursively(prj_top_dir))
+    #     rootDirs.extend(scan_repos_recursively(git_repo_dir))
+    #     if confirm_dirs(rootDirs):
+    #         process_scanned_dirs(rootDirs)
+    #     else:
+    #         sys.exit(0)
+    # else:
+    #     """ use the current directory and the pyLnLib directory as the root directories"""
+    #     rootDirs.append(pyLnLib_path)
+    #     rootDirs.append(prj_repo_dir)
+    #     if confirm_dirs(rootDirs):
+    #         process_this_project(rootDirs)
+    #     else:
+    #         sys.exit(0)
 
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 07-06-2026 19.55.19
+# Date .........: 11-07-2026 17.31.39
 #
 
 
@@ -15,6 +15,7 @@ from .get_git_root          import getGitRoot
 from .get_last_tag          import get_last_tag
 from .git_status            import gitStatus
 from .help_commands         import helpCommands
+from .process_project         import process_project
 
 __all__ = [
     'getGitRoot',
@@ -26,4 +27,5 @@ __all__ = [
     'update_library',
     'update_pyproject',
     'get_last_tag',
+    'process_project',
 ]
