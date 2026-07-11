@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 11-07-2026 17.33.07
+# Date .........: 11-07-2026 18.34.28
 #
 
 import sys
@@ -21,7 +21,7 @@ from     pyLnLib.files     import zipDir, get_yaml_engine
 from     pyLnLib.lndict     import lnDict
 
 C=get_colors()
-prjVars=get_project_vars()
+prjVars: lnDict=get_project_vars()
 logger=get_logger()
 
 # from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
@@ -34,103 +34,13 @@ def is_git_repo(path):
     return os.path.isdir(git_dir)
 
 
-def scan_repos_recursively_01(base_path: str) -> list:
-    """Scansiona ricorsivamente tutte le sottodirectory per repository Git."""
-    repo_list = []
-    exclude_strings = {"prev", "saved", ".pio", "wkdevel", ".pyenv", "to_be_removed"}  # set = lookup più veloce
-
-    for root, dirs, _files in os.walk(base_path):
-        root_lower = root.lower()
-
-        # Skip condizioni
-        if (
-            root.endswith('_') or
-            root_lower.endswith('_old') or
-            any(excl in root_lower for excl in exclude_strings)
-        ):
-            continue
-
-        if not is_git_repo(root):
-            continue
-
-        repo_list.append(root)
-        # x=lnDict
-        commit, push = gitStatus(git_dir=root)
-        if commit or push:
-            # Non scendere nei sottofolder se repo "attivo" (evita repo annidati)
-            dirs.clear()
-
-    return repo_list
-
-
-
-#################################################################
-#  SCAN_REPOS_RECURSIVELY + performante
-#################################################################
-def scan_repos_recursively(base_path: str|Path) -> list:
-    repo_list = []
-    exclude_strings = {"prev", "saved", ".pio", "wkdevel", ".pyenv", "to_be_removed"}  # set = lookup più veloce
-
-    for root, dirs, _files in os.walk(base_path):
-        # Filtra dirs IN PLACE → enorme boost performance
-        dirs[:] = [
-            d for d in dirs
-            if not (
-                d.endswith('_') or
-                d.lower().endswith('_old') or
-                any(excl in d.lower() for excl in exclude_strings)
-            )
-        ]
-
-        if not is_git_repo(root):
-            continue
-
-        repo_list.append(root)
-
-        commit, push = gitStatus(git_dir=root)
-        if commit or push:
-            dirs.clear()
-            repo_list.append(root)
-
-    return repo_list
-
-
-def confirm_dirs(rootDirs: list[str]) -> bool:
-    if len(rootDirs) > 1:
-        print("the following projects will be committed!:")
-        for _dir in rootDirs:
-            print(f"\t{C.yellow}{str(_dir)}{C.reset}")
-
-        choice: list[str]=keyboardPrompt(text_msg="continue [c]", validKeys=["c"], exitKeys=["n", "x", "q", "ENTER"])
-        if choice[0] == "c":
-            return True
-        else:
-            return False
-    else:
-        logger.warning("🚀 no directories, with .git folder, in subfolders found!")
-        return False
-
-
-def executeCommit(gitROOT: str, commandsList: list[str], commit_description: str|None=None, fExecute: bool=False):
-    commandsList.insert(0, f"git commit -m '{commit_description}'")
-    commandsList.insert(0, "git add .")
-    logger.notify("=== start Command list ===")
-    for cmd in commandsList:
-        lnRun(cmd, fExecute=fExecute, cwd=gitROOT, timeout=300)
-
-
-def process_scanned_dirs(rootDirs: list[str]):
-    for gitROOT in rootDirs:
-        commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-        executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=True)
-
-
 
 
 #################################################################
 #  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -
 #################################################################
 def main():
+    ctx.set_project_name("gitCommit")
     #### 1. logger initializzation
     logger=init_logger(logger_name="gitCommit", test=False)
     #### 2. read static project list file
@@ -139,19 +49,22 @@ def main():
     config_data: lnDict = lnDict(yaml_engine.load(str(config_file)))
 
     #### 3. initialize project variables
+    # prjVars=lnDict(config_data)
     prjVars.update(config_data)
 
     #### 4. processo input arguments....
     args = parseInput()
     prjVars["input_args"]=vars(args) # include args in project_vars
+    prjVars.save_yaml(filepath=ctx.get_log_dir() / "project_vars.yaml", title="project_vars", indent=4)
+
 
     #### 4a. update logger as requested by input arguments
     logger.setNameLength(dynamic=False, length=args.log_name_length)
     logger.setShowCaller(show_caller=args.log_show_caller)
 
     # prepariamo i percorsi importanti
-    prj_top_dir = Path.cwd().resolve()
-    prj_repo_dir = Path(getGitRoot())
+    # prj_top_dir = Path.cwd().resolve()
+    # prj_repo_dir = Path(getGitRoot())
 
 
     # print project variables if requested
@@ -172,12 +85,14 @@ def main():
 
     args = get_project_vars("input_args")
     #### 5. prepare rootDirs for searching git projects
-    rootDirs = []
+    # rootDirs = []
     if args.scan:
-        for prj_name, prj_dir in prjVars.git_project_dirs.items():
-            process_project(project_name=prj_name, project_dir=prj_dir)
+        for prj_name in prjVars.git_project_dirs.keys():
+            git_project = prjVars.git_project_dirs[prj_name]
+            git_project["name"] = prj_name
+            process_project(project=git_project)
 
-
+        prjVars.save_yaml(filepath=ctx.get_log_dir() / "project_vars_final.yaml", title="project_vars", indent=4)
 
     #     """ scan for git projects recursively in the current directory and in the git repo directory"""
     #     rootDirs.extend(scan_repos_recursively(prj_top_dir))
@@ -227,7 +142,7 @@ def main_prev():
     #### 3. processo input arguments....
     args = parseInput()
     prjVars["input_args"]=vars(args) # include args in project_vars
-
+    import pdb; pdb.set_trace();  # by Loreto
     #### 4. update logger as requested by input arguments
     logger.setNameLength(dynamic=False, length=args.log_name_length)
     logger.setShowCaller(show_caller=args.log_show_caller)

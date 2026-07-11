@@ -23,16 +23,19 @@ logger=get_logger()
 #   True:  something to commit
 #   False: nothing to commit
 ######################################################
-def gitStatus(project_name: str, project_dir: str|Path, logger_level: str="warning"):
+def gitStatus(project: lnDict, logger_level: str="warning")->None:
     saved_logger_level = logger.getConsoleLoggerLevel()
     logger.setConsoleLoggerLevel(logger_level)
-    logger.debug("working on dir: %s", project_dir, color=C.whiteH)
-    rcode, stdout, stderr = lnRun("git status", cwd=project_dir, fExecute=True, stacklevel=0)
+    flags = project["flags"]
+
+
+    logger.debug("working on dir: %s", project.path, color=C.whiteH)
+    rcode, stdout, stderr = lnRun("git status", cwd=project.path, fExecute=True, stacklevel=0)
     commit = True
     push = False
 
     if rcode:
-        logger.error("project name: %s on path: %s", project_name, project_dir)
+        logger.error("project name: %s on path: %s", project.name, project.path )
         logger.error("%s", stdout)
         logger.error("%s", stderr)
         sys.exit(1)
@@ -59,4 +62,5 @@ def gitStatus(project_name: str, project_dir: str|Path, logger_level: str="warni
         logger.debug("no commit necessary!")
 
     logger.setConsoleLoggerLevel(saved_logger_level)
-    return commit, push
+    flags.commit = commit
+    flags.push = push

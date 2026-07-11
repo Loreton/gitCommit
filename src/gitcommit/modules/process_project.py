@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 11-07-2026 17.31.11
+# Date .........: 11-07-2026 17.51.25
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -10,9 +10,11 @@ from pathlib import Path
 ### - project modules
 from pyLnLib.logger import  get_logger
 from pyLnLib.colors import  get_colors
+from pyLnLib.context import  get_project_vars
+from pyLnLib.lndict import  lnDict
 
 # from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
-from gitcommit.modules import gitStatus
+from gitcommit.modules import get_last_tag, gitStatus
 
 logger = get_logger()
 C = get_colors()
@@ -20,114 +22,73 @@ C = get_colors()
 
 
 
-###################################################
-#
-###################################################
-def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> tuple[list, str]:
-    args=get_project_vars("input_args")
-    cmdList=[]
 
-    # ----------------------------
-    # - read git status
-    # ----------------------------
-    fNewVersion=None
+
+
+def check_arg_scan(project: lnDict) -> None:
+    args = get_project_vars("input_args")
+    # project_path = project["path"]
+    flags = project["flags"]
 
     if args.scan:
         from datetime import datetime
-        fPush=fCommit
-        now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-        # args.description=f"update on {now}" ### force
-        commit_description: str =f"update on {now}" ### force
+        if flags.commit:
+            now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+            flags.commit_description = f"update on {now}" ### force
 
-    else:
+
+def check_version(project: lnDict) -> None:
+    args = get_project_vars("input_args")
+    flags = project["flags"]
+
+    if args.version:
         """ ignoriamo la versione e facciamo solo commit e push di tutto quello che c'è da fare... """
-        last_tag = get_last_tag(gitRoot=gitRoot)
-        new_tag = last_tag
-        fNewVersion, version = processVersion(last_tag)
-        new_tag = f"v{version}"
-        # args.description=f"{args.description} (Release {version})"
-        commit_description=f"{args.description} (Release {version})"
-
-        # ----------------------------
-        # - changelog
-        # ----------------------------
-        if args.changelog:
-            updated_changelog = generate_changelog(version=version, fExecute=args.go, gitRoot=gitRoot)
-            if updated_changelog and fCommit:
-                cmdList.append("git add CHANGELOG.md")
-
-
-        # ----------------------------
-        # - tag
-        # ----------------------------
-        if args.tag:
-            if new_tag == last_tag:
-                logger.warning("Stai chiedendo il tag ma non è stato richiesto alcun incremento per la versione.")
-                logger.warning("L'opzione verrà ignorata!")
-                args.tag = False
-            else:
-                # ---- update library.json ----
-                updated = update_library(version=version, fExecute=args.go, gitRoot=gitRoot)
-                if updated and fCommit:
-                    cmdList.append("git add library.json")
-
-                updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=gitRoot)
-                if updated and fCommit:
-                    cmdList.append("git add pyproject.toml")
-
-                cmd = f'git tag -a "{new_tag}"'
-                if fNewVersion: cmd = f'{cmd} -m "Release {version}"'
-                cmdList.append(cmd)
-
-            logger.notify("=== RELEASE PLAN ===")
-            logger.info("Last tag: %s", last_tag)
-            logger.info("new  tag: %s", new_tag)
-
-    # ----------------------------
-    # - push
-    # ----------------------------
-    if args.push or fPush:
-        cmdList.append("git push")
-        if args.tag:
-            cmdList.append("git push --tags")
-
-
-
-    # ----------------------------
-    # - commit ----
-    # ----------------------------
-    # if fCommit:
-        # cmd = f'git commit -m "{args.description}"'
-        # cmd = f'git commit -m "{commit_description}"'
-        # cmdList.insert(0, cmd)
-        # cmdList.insert(0, "git add .")
-
-
-    return cmdList, commit_description
-
-
-
-
+        flags.last_tag = get_last_tag(gitRoot=project.path)
+        flags.new_tag = flags.last_tag
+        flags.fNewVersion, flags.version = processVersion(flags.last_tag)
+        flags.new_tag = f"v{flags.version}"
+        # args.description=f"{args.description} (Release {flags.version})"
+        flags.commit_description=f"{args.description} (Release {flags.version})"
 
 ###################################################
 # ---- update pyproject.toml ----
 ###################################################
-def process_project(project_name: str, project_dir: Path|str) -> None:
-    # prj_name = Path(project_dir).stem
-    parent = Path(project_dir).parent
+def process_project(project: lnDict) -> None:
+    project_path = project["path"]
+    flags = project["flags"]
 
     print()
-    logger.notify("-"*50)
-    # logger.notify("project_name: %s, project_dir: %s/", project_name, project_dir)
-    logger.notify(f"project_name: {C.yellow}%s{C.reset}", project_name)
-    logger.notify("project_dir: %s/",project_dir)
+    logger.info("-"*50)
+    logger.info(f"project_name: {C.yellow}%s{C.reset}", project.name)
+    logger.info("project_dir: %s/",project_path)
 
-    # logger.setConsoleLoggerLevel("warning")
-    # logger.getConsoleLoggerLevel()
-    fCommit, fPush = gitStatus(project_name=project_name, project_dir=project_dir, logger_level="warning")
-    if fCommit or fPush:
-        logger.info("commit: %s - Push: %s", fCommit, fPush)
+
+    gitStatus(project)
+    if flags.commit or flags.push:
+        logger.notify("commit: %s - Push: %s", flags.commit, flags.push)
+        check_arg_scan(project)
+        check_version(project)
+
+
+
+
     return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=project_dir)
     executeCommit(gitROOT=project_dir, commandsList=commandsList, commit_description=commit_description, fExecute=False)
