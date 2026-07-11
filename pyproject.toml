@@ -25,20 +25,15 @@ dev = [
 [project.scripts]
 gitcommit = "gitcommit.main:main"
 
-[tool.setuptools.packages.find]
-where = [
-    "src",
-]
-
 
 [project.license]
 text = "MIT"
 
 [tool.ruff.lint]
 ignore = [
+    "E401",
     "E402",
     "E702",
-    "E401",
     "E701",
 ]
 
@@ -49,6 +44,11 @@ reportUnusedVariable = "warning"
 reportUnusedImport = "warning"
 reportOptionalMemberAccess = "warning"
 reportMissingTypeStubs = false
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
 
 [tool.ruff]
 line-length = 100

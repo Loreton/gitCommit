@@ -1,0 +1,34 @@
+root_dirs:
+        # prepariamo i percorsi importanti
+    pyLnLib_dir: "$ln_PY_LNLIB_DIR"
+    ln_repo_dir: "$ln_GIT_REPO_DIR"
+
+git_project_dirs:
+    gitCommit:                 "${HOME}/filu/Programming/gitREPO/gitCommit"
+    deviceManager:             "${HOME}/filu/Programming/gitREPO/lnDevices/deviceManager"
+    lnEsptool:                 "${HOME}/filu/Programming/gitREPO/lnEsptool"
+    lnSync:                    "${HOME}/filu/Programming/gitREPO/lnSync"
+    pressControl:              "${HOME}/filu/Programming/gitREPO/esp32/pressControl"
+    orto_esp32:                "${HOME}/filu/Programming/gitREPO/esp32/orto_esp32"
+    lnTimeSched_esp32:         "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeSched_esp32"
+    lnLogger_esp32:            "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnLogger_esp32"
+    lnTimeClock_esp32:         "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeClock_esp32"
+    lnTelegram_esp32:          "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegram_esp32"
+    lnWifiManager_esp32:       "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnWifiManager_esp32"
+    lnTelegramSendHttp_esp32:  "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegramSendHttp_esp32"
+    lnSerialRead_esp32:        "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnSerialRead_esp32"
+    lnMillisTimers_esp32:      "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnMillisTimers_esp32"
+    lnButtonManager_esp32:     "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnButtonManager_esp32"
+    lnCheckPins_esp32:         "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnCheckPins_esp32"
+    pyLnLib:                   "${HOME}/filu/Programming/gitREPO/pyLnLib"
+
+project_vars:
+    input_args:
+
+    git:
+        changelog: False
+        tag:       False
+        minor:     False
+        major:     False
+        patch:     False
+        version:  "0.0.0"

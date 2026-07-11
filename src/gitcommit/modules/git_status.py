@@ -4,7 +4,9 @@
 # Date .........: 05-07-2026 15.38.47
 #
 
-import sys; sys.dont_write_bytecode = True
+import sys
+
+from pyLnLib.files.yaml_loader_class import Path; sys.dont_write_bytecode = True
 # from datetime import datetime
 # from pathlib import Path
 
@@ -22,17 +24,17 @@ logger=get_logger()
 #   False: nothing to commit
 ######################################################
 # def gitStatus(path: str, logger=lnLib.gVars.logger, show_log: bool=True):
-def gitStatus(git_dir: str):
+def gitStatus(project_name: str, project_dir: str|Path):
     print()
-    logger.info("working on dir: %s", git_dir, color=C.whiteH)
-    rcode, stdout, stderr = lnRun("git status", cwd=git_dir, fExecute=True, stacklevel=0)
+    logger.debug("working on dir: %s", project_dir, color=C.whiteH)
+    rcode, stdout, stderr = lnRun("git status", cwd=project_dir, fExecute=True, stacklevel=0)
     commit = True
     push = False
 
     if rcode:
-        print(f"\t{C.redH}ERROR! on path: {git_dir}{C.reset}")
-        print(f"\t{C.redH}{stdout}{C.reset}")
-        print(f"\t{C.redH}{stderr}{C.reset}")
+        logger.error("project name: %s on path: %s", project_name, project_dir)
+        logger.error("%s", stdout)
+        logger.error("%s", stderr)
         sys.exit(1)
     else:
         for line in stdout.splitlines():

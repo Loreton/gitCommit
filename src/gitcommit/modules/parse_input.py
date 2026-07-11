@@ -28,6 +28,7 @@ def parseInput():
     action_opt.add_argument("--changelog", action="store_true", help="Aggiorna CHANGELOG.md")
     action_opt.add_argument("--status", action="store_true", help="Display git status")
     action_opt.add_argument("--scan", action="store_true", help="scan for git repositories in all subforders")
+    action_opt.add_argument("--ziplib", action="store_true", help="zip pyLnLib to be saved in git")
     # action_opt.add_argument("--root-dir", metavar='', required=False, default=None, type=str, help="root dir from which scan for git repositories.")
 
     commands_opt=parser.add_argument_group(f'{C.white} --------- git commands{C.reset}')
@@ -47,6 +48,7 @@ def parseInput():
     execution_opt.add_argument("--log-name-length", type=int, default=0, help="module name max length")
     execution_opt.add_argument("--log-show-caller", action="store_true", help="show also caller name")
     execution_opt.add_argument("--display-args", action="store_true", help="Display arguments")
+    execution_opt.add_argument("--vars", action="store_true", help="Display project variables")
     execution_opt.add_argument("--edit", action="store_true", help="Edit this script")
 
     args = parser.parse_args()

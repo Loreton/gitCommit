@@ -1,78 +1,22 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 07-07-2026 21.25.20
+# Date .........: 10-07-2026 14.32.19
 #
 
-import sys
-from webbrowser import get; sys.dont_write_bytecode = True
-import re
+import sys; sys.dont_write_bytecode = True
+from pathlib import Path
 
 ### - project modules
-from pyLnLib           import  gVars as ctx, get_logger, get_project_vars
+from pyLnLib.logger import  get_logger
+from pyLnLib.colors import  get_colors
 
-from .get_last_tag     import  get_last_tag
-from .change_log       import  generate_changelog
-from .update_library   import  update_library
-from .update_pyproject import  update_pyproject
+# from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
+from gitcommit.modules import gitStatus
 
-logger=get_logger()
-# prj=get_project_vars()
+logger = get_logger()
+C = get_colors()
 
-
-###################################################
-#
-###################################################
-def bump(version, level):
-    major, minor, patch = map(int, version.split("."))
-    if level == "patch": patch += 1
-    elif level == "minor": minor += 1; patch = 0
-    elif level == "major": major += 1; minor = 0; patch = 0
-    return f"{major}.{minor}.{patch}"
-
-
-###################################################
-# ---- ---
-###################################################
-def validate(version):
-    SEMVER_REGEX = r"^\d+\.\d+\.\d+$"
-    if not re.match(SEMVER_REGEX, version):
-        raise ValueError(f"Formato versione {version} non valido (MAJOR.MINOR.PATCH)")
-
-
-
-
-###################################################
-#
-###################################################
-def processVersion(last_tag: str):
-    args = get_project_vars("input_args")
-
-    # ----------------------------
-    # - determina versione
-    # ----------------------------
-    if args.version:
-        ''' è stato chiesto un upgrade di version... '''
-        version = args.version.lstrip("v")
-        fNewVersion = True
-
-    elif any([args.patch, args.minor, args.major]):
-        ''' è stato chiesto un upgrade di version... '''
-        level = "patch" if args.patch else "minor" if args.minor else "major"
-        version = bump(last_tag.lstrip('v'), level)
-        fNewVersion = True
-    else:
-        ''' la versione rimane invariata'''
-        version = last_tag.lstrip('v')
-        fNewVersion = False
-
-    if fNewVersion:
-        args.tag = True
-        args.changelog = True
-
-    validate(version)
-
-    return fNewVersion, version
 
 
 
@@ -80,8 +24,7 @@ def processVersion(last_tag: str):
 #
 ###################################################
 def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> tuple[list, str]:
-    prjVars=get_project_vars()
-    args=prjVars.input_args
+    args=get_project_vars("input_args")
     cmdList=[]
 
     # ----------------------------
@@ -161,3 +104,35 @@ def processArgs(fCommit: bool, fPush: bool, gitRoot: str) -> tuple[list, str]:
 
 
     return cmdList, commit_description
+
+
+
+
+
+###################################################
+# ---- update pyproject.toml ----
+###################################################
+def process_single_project(project_name: str, project_dir: Path|str) -> None:
+    # prj_name = Path(project_dir).stem
+    parent = Path(project_dir).parent
+
+    logger.info("")
+    logger.notify("="*50)
+    logger.notify("project_name: %s, project_dir: %s/", project_name, project_dir)
+
+    fCommit, fPush = gitStatus(project_name=project_name, project_dir=project_dir)
+    return
+
+    commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=project_dir)
+    executeCommit(gitROOT=project_dir, commandsList=commandsList, commit_description=commit_description, fExecute=False)
+    choice=keyboardPrompt(text_msg="enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
+    if choice[0] == "--go":
+        '''devo di nuovo processare, prima di procedere,
+            perché alcuni file potrebbero subire modifiche
+            (CHANGELOG.MD o pyproject.toml, o altri)'''
+
+        commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=project_dir)
+        executeCommit(gitROOT=project_dir, commandsList=commandsList, commit_description=commit_description, fExecute=True)
+
+    # else:
+    #     logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 nothing to do!",  color=C.green)

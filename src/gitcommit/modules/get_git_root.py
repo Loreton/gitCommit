@@ -15,9 +15,5 @@ from pyLnLib import  lnRun
 #
 ###################################################
 def getGitRoot():
-    _rcode, stdout, _stderr = lnRun(
-        "git rev-parse --show-toplevel",
-        fExecute=True,
-        stacklevel=1
-    )
+    _rcode, stdout, _stderr = lnRun( "git rev-parse --show-toplevel", fExecute=True, stacklevel=1 )
     return stdout.strip()
