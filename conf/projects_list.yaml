@@ -1,11 +1,10 @@
 main:
-    root_dirs:
-            # prepariamo i percorsi importanti
-        pyLnLib_dir: "$ln_PY_LNLIB_DIR"
-        ln_repo_dir: "$ln_GIT_REPO_DIR"
+    # prepariamo i percorsi importanti
+    pyLnLib_dir: "$ln_PY_LNLIB_DIR"
+    ln_repo_dir: "$ln_GIT_REPO_DIR"
 
     git_default_flags: &flags
-        commit_descr: null
+        description: null
         changelog: False
         tag:       False
         minor:     False
@@ -14,6 +13,7 @@ main:
         version:  "0.0.0"
         commit:  False
         push:  False
+        # fNewVersion: False
 
 git_project_dirs:
     gitCommit:

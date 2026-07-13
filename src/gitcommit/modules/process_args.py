@@ -20,60 +20,6 @@ logger=get_logger()
 # prj=get_project_vars()
 
 
-###################################################
-#
-###################################################
-def bump(version, level):
-    major, minor, patch = map(int, version.split("."))
-    if level == "patch": patch += 1
-    elif level == "minor": minor += 1; patch = 0
-    elif level == "major": major += 1; minor = 0; patch = 0
-    return f"{major}.{minor}.{patch}"
-
-
-###################################################
-# ---- ---
-###################################################
-def validate(version):
-    SEMVER_REGEX = r"^\d+\.\d+\.\d+$"
-    if not re.match(SEMVER_REGEX, version):
-        raise ValueError(f"Formato versione {version} non valido (MAJOR.MINOR.PATCH)")
-
-
-
-
-###################################################
-#
-###################################################
-def processVersion(last_tag: str):
-    args = get_project_vars("input_args")
-
-    # ----------------------------
-    # - determina versione
-    # ----------------------------
-    if args.version:
-        ''' è stato chiesto un upgrade di version... '''
-        version = args.version.lstrip("v")
-        fNewVersion = True
-
-    elif any([args.patch, args.minor, args.major]):
-        ''' è stato chiesto un upgrade di version... '''
-        level = "patch" if args.patch else "minor" if args.minor else "major"
-        version = bump(last_tag.lstrip('v'), level)
-        fNewVersion = True
-    else:
-        ''' la versione rimane invariata'''
-        version = last_tag.lstrip('v')
-        fNewVersion = False
-
-    if fNewVersion:
-        args.tag = True
-        args.changelog = True
-
-    validate(version)
-
-    return fNewVersion, version
-
 
 
 ###################################################

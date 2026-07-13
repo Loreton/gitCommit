@@ -6,4 +6,4 @@ __version__ = "0.1.0"
 # from .modules.parse_input import parseInput
 # from .modules.git_status import gitStatus
 # from .modules.get_git_root import getGitRoot
-# from .modules.help_commands import helpCommands
+from .modules.git_commands import git_status
