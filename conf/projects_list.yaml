@@ -13,59 +13,110 @@ main:
         version:  "0.0.0"
         commit:  False
         push:  False
+        pylnlib_commit_nr:  None
         # fNewVersion: False
 
 git_project_dirs:
     gitCommit:
         path: "${HOME}/filu/Programming/gitREPO/gitCommit"
         flags:  *flags
+        cmd_list: []
+        python: True
+
     deviceManager:
         path: "${HOME}/filu/Programming/gitREPO/lnDevices/deviceManager"
         flags:  *flags
+        cmd_list: []
+        python: True
+
     lnEsptool:
         path: "${HOME}/filu/Programming/gitREPO/lnEsptool"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnSync:
         path: "${HOME}/filu/Programming/gitREPO/lnSync"
         flags:  *flags
+        cmd_list: []
+        python: True
+
     pressControl:
         path: "${HOME}/filu/Programming/gitREPO/esp32/pressControl"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     orto_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/orto_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnTimeSched_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeSched_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnLogger_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnLogger_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnTimeClock_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeClock_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnTelegram_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegram_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnWifiManager_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnWifiManager_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnTelegramSendHttp_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegramSendHttp_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnSerialRead_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnSerialRead_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnMillisTimers_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnMillisTimers_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnButtonManager_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnButtonManager_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     lnCheckPins_esp32:
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnCheckPins_esp32"
         flags:  *flags
+        cmd_list: []
+        python: False
+
     pyLnLib:
         path: "${HOME}/filu/Programming/gitREPO/pyLnLib"
         flags:  *flags
+        cmd_list: []
+        python: True
 
 input_args:

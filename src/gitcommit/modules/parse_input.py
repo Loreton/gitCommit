@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 05-07-2026 14.43.11
+# Date .........: 13-07-2026 15.59.03
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -67,7 +67,8 @@ def parseInput():
     if args.display_args:
         import json
         json_data = json.dumps(vars(args), indent=4, sort_keys=True)
-        print(f'\tinput arguments: {json_data}'.format(**locals()))
+        # print(f'\tinput arguments: {json_data}'.format(**locals()))
+        print(f'input arguments: {json_data}')
         sys.exit(0)
 
 

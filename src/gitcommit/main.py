@@ -4,7 +4,10 @@
 # Date .........: 13-07-2026 11.29.51
 #
 
+from inspect import stack
 import sys
+
+from gitcommit.modules.git_commands import git_status
 
 sys.dont_write_bytecode = True
 import os
@@ -34,25 +37,30 @@ def is_git_repo(path):
     return os.path.isdir(git_dir)
 
 
-def commit_project(project: lnDict) -> bool:
+def commit_project(project: lnDict) -> None:
     cmd_list: list[str] = []
     flags = project.flags
+    args = pVars["input_args"]
 
     if not any([flags.commit, flags.push]):
         return True
 
+
     if flags.commit:
         cmd_list.append("git add .")
         cmd_list.append(f'git commit -m \"{flags.description}\"')
-    if flags.push:
-        cmd_list.append("git push")
+        if args.push:
+            cmd_list.append("git push")
 
+    if flags.push:
+        if "git push" not in cmd_list:
+            cmd_list.append("git push")
 
     # display command list
     print()
-    logger.info(f"%s {C.white}%s{C.green} %s", "-"*5, project.name, '-'*30)
+    logger.info(f"- {C.white}%s [commit->%s push->%s]", project.name, flags.commit, flags.push)
     for cmd in cmd_list:
-        logger.info(cmd)
+        logger.info(cmd, color=C.magentaH)
 
     # prompt per esecuzione comandi
     choice=keyboardPrompt(text_msg=f"project: {project.name} -  enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
@@ -64,11 +72,22 @@ def commit_project(project: lnDict) -> bool:
 
     # Esecuzione dei comandi
     for cmd in cmd_list:
-        # logger.info(cmd)
-        lnRun(cmd, fExecute=False, cwd=project.path, timeout=300, logger_level="info")
-    #     return False
+        lnRun(cmd, fExecute=False, cwd=project.path, timeout=300, logger_level="info", stacklevel=1)
+    logger.notify(f"{C.yellowH}{project.name}: {C.yellow} 🚀 commit/push done!",  color=C.green)
+    # return True
 
-    return True
+
+
+#===================================================
+#
+#===================================================
+def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
+    rcode, stdout, stderr = lnRun("git log -1 --oneline", fExecute=True, cwd=project.path, stacklevel=2 )
+    if rcode != 0:
+        logger.error(f"getGitRoot: failed to get git root: {stderr}", exit=True)
+    return  stdout.split()[0]
+
+
 
 
 #################################################################
@@ -130,7 +149,8 @@ def main():
         projects_list = ['pyLnLib', prj_top_dir.name]
 
     projectsToProcess = lnDict()
-
+    pylnlib_commit_nr = check_pyLnLib(pVars.git_project_dirs["pyLnLib"])
+    import pdb; pdb.set_trace();  # by Loreto
     ### -----------------------------
     ### - - prepara un dict per contenere i progetti da fare commit/push
     ### - - tutti i flag dello stato saranno modificati a dovere
@@ -138,20 +158,23 @@ def main():
     ### - - pyLnLib comunque compare....
     ### -----------------------------
     for prj_name in projects_list[:]:
-        project = pVars.git_project_dirs[prj_name]
-        project["name"] = prj_name
-        if process_project(project=project):
-            projectsToProcess[prj_name] = project
+        git_project = pVars.git_project_dirs[prj_name]
+        git_project["name"] = prj_name
+        git_project["cmd_list"] = []
+        if git_project.python:
+            git_project["flags.pylnlib_commit_nr"] = pylnlib_commit_nr
+        if process_project(project=git_project):
+            projectsToProcess[prj_name] = git_project
 
     projectsToProcess.save_yaml(filepath=ctx.get_log_dir() / "project_vars_final.yaml", title="projects_to_be_committed", indent=4)
 
     for prj_name in projectsToProcess.keys():
-        project = projectsToProcess[prj_name]
-        if any([project.flags.commit, project.flags.push]):
-            if commit_project(project=project):
-                logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 commit/push done!",  color=C.green)
-            else:
-                logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 commit/push failed!",  color=C.red)
+        git_project = projectsToProcess[prj_name]
+        if git_project.cmd_list:
+            commit_project(project=git_project)
+            #     logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 commit/push done!",  color=C.green)
+            # else:
+            #     logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 commit/push failed!",  color=C.red)
 
 
 
