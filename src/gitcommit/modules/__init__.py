@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 13-07-2026 11.27.30
+# Date .........: 13-07-2026 20.22.36
 #
 
 
 # utils/__init__.py
-from .process_args          import processArgs
+# from .process_args          import processArgs
 from .change_log            import generate_changelog
 from .update_library        import update_library
 from .update_pyproject      import update_pyproject
 from .parse_input           import parseInput
-# from .get_git_root          import getGitRoot
+from .check_args            import check_args
 # from .get_last_tag          import get_last_tag
 # from .git_status            import gitStatus
 from .help_commands         import helpCommands
@@ -21,8 +21,9 @@ from .git_commands         import git_status, get_last_tag, is_git_repo, getGitR
 
 __all__ = [
     'getGitRoot',
-    'processArgs',
+    # 'processArgs',
     'parseInput',
+    'check_args',
     'gitStatus',
     'helpCommands',
     'generate_changelog',

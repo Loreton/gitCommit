@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 13-07-2026 16.52.28
+# Date .........: 13-07-2026 18.48.16
 #
 
 # import sys
@@ -78,8 +78,6 @@ def process_project(project: lnDict) -> bool:
     logger.info(f"project_name: {C.yellow}%s{C.reset}", project.name)
     logger.info("project_dir: %s/",project_path)
 
-    # if project.name == 'pyLnLib':
-    #     flags.commit_nr = check_pyLnLib(project)
 
     flags.commit, flags.push =  git_status(git_root=project_path)
 

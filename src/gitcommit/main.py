@@ -9,6 +9,10 @@ import sys
 
 from gitcommit.modules.git_commands import git_status
 
+# from gitcommit.modules.git_commands import git_status
+# from .modules.git_commands import git_status
+from .modules.check_args import check_args
+
 sys.dont_write_bytecode = True
 import os
 from pathlib import Path
@@ -28,7 +32,7 @@ pVars: lnDict=get_project_vars()
 logger=get_logger()
 
 # from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
-from gitcommit.modules import parseInput, process_project, getGitRoot
+from gitcommit.modules import parseInput, process_project, getGitRoot, helpCommands
 
 
 def is_git_repo(path):
@@ -113,30 +117,41 @@ def main():
     pVars.save_yaml(filepath=ctx.get_log_dir() / "project_vars.yaml", title="project_vars", indent=4)
 
 
-    #### 4a. update logger as requested by input arguments
+    # -----------------------------------------
+    # - update logger as requested by input arguments
+    # -----------------------------------------
     logger.setNameLength(dynamic=False, length=args.log_name_length)
     logger.setShowCaller(show_caller=args.log_show_caller)
 
-    _rcode, prj_top_dir = getGitRoot(os.path.curdir)
-    prj_top_dir=Path(prj_top_dir)
-
-
-
-    # print project variables if requested
+    # -----------------------------------------
+    # - print project variables if requested
+    # -----------------------------------------
     if args.vars:
         print(pVars)
         sys.exit(0)
 
-    # list commands if requested
+    # -----------------------------------------
+    # - list commands if requested
+    # -----------------------------------------
     if args.list_commands:
         commands = helpCommands()
         print(f"{C.green}{commands}{C.reset}")
         sys.exit(0)
 
-    # create pyLnLib.zip if requested
+
+    # -----------------------------------------
+    # - get current dir  project info
+    # -----------------------------------------
+    _rcode, prj_top_dir = getGitRoot(os.path.curdir)
+    prj_top_dir=Path(prj_top_dir)
+
+    # -----------------------------------------
+    # - create pyLnLib.zip if requested
+    # -----------------------------------------
     if args.ziplib:
         pyLnLib_path = pVars.root_dirs.pyLnLib_dir /  "src/pyLnLib"
         zipDir(source_dir=pyLnLib_path, output_zip=prj_top_dir / "pyLnLib.zip")
+
 
 
     ### -----------------------------
@@ -144,13 +159,14 @@ def main():
     ### -----------------------------
     projects_list: list[str] = [] # lista dei nomi dei progetti da processare
     if args.scan:
-        projects_list= pVars.git_project_dirs.keys()
+        projects_list = pVars.git_project.keys()
     else:
-        projects_list = ['pyLnLib', prj_top_dir.name]
+        projects_list = [prj_top_dir.name]
+        git_prj=pVars.git_project[prj_top_dir.name]
+        check_args(git_prj=git_prj)
 
     projectsToProcess = lnDict()
     pylnlib_commit_nr = check_pyLnLib(pVars.git_project_dirs["pyLnLib"])
-    import pdb; pdb.set_trace();  # by Loreto
     ### -----------------------------
     ### - - prepara un dict per contenere i progetti da fare commit/push
     ### - - tutti i flag dello stato saranno modificati a dovere
@@ -160,7 +176,6 @@ def main():
     for prj_name in projects_list[:]:
         git_project = pVars.git_project_dirs[prj_name]
         git_project["name"] = prj_name
-        git_project["cmd_list"] = []
         if git_project.python:
             git_project["flags.pylnlib_commit_nr"] = pylnlib_commit_nr
         if process_project(project=git_project):
