@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    // "envfile": "${workspaceFolder}/.env",
+    "env": {
+        // "PYTHONPATH": "${workspaceFolder}/Source:${workspaceFolder}/Source/lnLib_lnk:${workspaceFolder}/Source/projectModules"
+    },
+    "configurations": [
+        {
+            "name": "main",
+            "type": "debugpy",
+            // "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "src/gitcommit/main.py", // non funziona su zip program
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args":[
+                "test commit",
+            ],
+           // "env": {
+           //     "PYTHONPATH": "${workspaceFolder}/Source:${workspaceFolder}/Source/lnLib_lnk"
+           //  },
+        },
+    ]
+}

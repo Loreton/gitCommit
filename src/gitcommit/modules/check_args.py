@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 07-07-2026 21.25.20
+# Date .........: 17-07-2026 14.04.01
 #
 
 import sys
@@ -11,18 +11,18 @@ import re
 ### - project modules
 from pyLnLib           import  get_logger, get_project_vars, lnDict
 
-from .get_last_tag     import  get_last_tag
-from .change_log       import  generate_changelog
-from .update_library   import  update_library
-from .update_pyproject import  update_pyproject
-from .git_commands import git_status
+# from .get_last_tag     import  get_last_tag
+from gitcommit.files.changelog       import  generate_changelog
+# from .update_library   import  update_library
+# from .update_pyproject import  update_pyproject
+# from .git_commands import git_status
 logger=get_logger()
 pvars=get_project_vars()
 
 
 
 ###################################################
-#
+# custruisce il formato della versione (MAJOR.MINOR.PATCH)
 ###################################################
 def bump(version, level):
     major, minor, patch = map(int, version.split("."))
@@ -44,73 +44,71 @@ def validate(version):
 ###################################################
 #
 ###################################################
-def processVersion(last_tag: str):
+def check_version(git_prj: lnDict):
     args=get_project_vars("input_args")
 
-    # ----------------------------
-    # - determina versione
-    # ----------------------------
     if args.version:
         ''' è stato chiesto un upgrade di version... '''
-        version = args.version.lstrip("v")
-        fNewVersion = True
+        git_prj.new_version = args.version.lstrip("v")
+        # fNewVersion = True
 
     elif any([args.patch, args.minor, args.major]):
         ''' è stato chiesto un upgrade di version... '''
         level = "patch" if args.patch else "minor" if args.minor else "major"
-        version = bump(last_tag.lstrip('v'), level)
-        fNewVersion = True
+        git_prj.new_version = bump(git_prj.last_version, level)
     else:
         ''' la versione rimane invariata'''
-        version = last_tag.lstrip('v')
-        fNewVersion = False
+        git_prj.new_version = git_prj.last_version
 
-    if fNewVersion:
-        args.tag = True
+    validate(git_prj.new_version)
+
+    if git_prj.new_version != git_prj.last_version:
         args.changelog = True
 
-    validate(version)
+    return
 
-    return fNewVersion, version
+
+
 
 
 
 ###################################################
 #
 ###################################################
-def check_args(git_prj: lnDict) -> None:
+def check_args(git_prj: lnDict) -> tuple[list[str], str]:
     args=get_project_vars("input_args")
-    # gitRoot=git_prj.path
 
     # ----------------------------
     # - read git status
     # ----------------------------
-    git_prj.commit, git_prj.push = git_status(git_root=git_prj.path)
+    # git_prj.commit, git_prj.push = git_status(git_root=git_prj.path)
     fNewVersion=None
+    cmdList = []
+    commit_description = str()
 
-    import pdb; pdb.set_trace();  # by Loreto
     if args.scan:
         from datetime import datetime
         git_prj.push = git_prj.commit
         now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-        # args.description=f"update on {now}" ### force
-        commit_description: str =f"update on {now}" ### force
+        commit_description =f"update on {now}" ### force
 
     else:
         """ ignoriamo la versione e facciamo solo commit e push di tutto quello che c'è da fare... """
-        last_tag = get_last_tag(gitRoot=git_prj.path)
-        new_tag = last_tag
-        fNewVersion, version = processVersion(last_tag)
-        new_tag = f"v{version}"
-        # args.description=f"{args.description} (Release {version})"
-        commit_description=f"{args.description} (Release {version})"
+        # last_tag = get_last_tag(gitRoot=git_prj.path)
+        # new_tag = last_tag
+        git_prj.new_version = git_prj.last_version
+        processVersion(args=args, last_version=git_prj.last_version)
+        if git_prj.new_version != git_prj.last_version:
+            args.changelog = True
+        # new_tag = f"v{version}"
+        # commit_description=f"{args.description} (Release {version})"
 
         # ----------------------------
         # - changelog
         # ----------------------------
         if args.changelog:
-            updated_changelog = generate_changelog(version=version, fExecute=args.go, gitRoot=gitRoot)
-            if updated_changelog and fCommit:
+            updated_changelog = generate_changelog(version=version, fExecute=args.go, gitRoot=git_prj.path)
+            if updated_changelog and git_prj.commit:
                 cmdList.append("git add CHANGELOG.md")
 
 
@@ -124,12 +122,12 @@ def check_args(git_prj: lnDict) -> None:
                 args.tag = False
             else:
                 # ---- update library.json ----
-                updated = update_library(version=version, fExecute=args.go, gitRoot=gitRoot)
-                if updated and fCommit:
+                updated = update_library(version=version, fExecute=args.go, gitRoot=git_prj.path)
+                if updated and git_prj.commit:
                     cmdList.append("git add library.json")
 
-                updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=gitRoot)
-                if updated and fCommit:
+                updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=git_prj.path)
+                if updated and git_prj.commit:
                     cmdList.append("git add pyproject.toml")
 
                 cmd = f'git tag -a "{new_tag}"'
@@ -143,7 +141,7 @@ def check_args(git_prj: lnDict) -> None:
     # ----------------------------
     # - push
     # ----------------------------
-    if args.push or fPush:
+    if args.push or git_prj.push:
         cmdList.append("git push")
         if args.tag:
             cmdList.append("git push --tags")

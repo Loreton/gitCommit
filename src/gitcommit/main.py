@@ -1,25 +1,18 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 13-07-2026 11.29.51
+# Date .........: 17-07-2026 14.00.53
 #
 
-from inspect import stack
+# from inspect import stack
 import sys
 
-from gitcommit.modules.git_commands import git_status
-
-# from gitcommit.modules.git_commands import git_status
-# from .modules.git_commands import git_status
-from .modules.check_args import check_args
-
-sys.dont_write_bytecode = True
+# sys.dont_write_bytecode = True
 import os
 from pathlib import Path
-# import yaml
 
      ### - project modules
-from     pyLnLib.context   import gVars as ctx, get_project_vars
+from     pyLnLib.context   import ctx, get_project_vars
 from     pyLnLib.colors    import get_colors
 from     pyLnLib.logger    import get_logger, init_logger
 from     pyLnLib.system    import lnRun
@@ -28,57 +21,60 @@ from     pyLnLib.files     import zipDir, get_yaml_engine
 from     pyLnLib.lndict     import lnDict
 
 C=get_colors()
-pVars: lnDict=get_project_vars()
+pv: lnDict=get_project_vars()
 logger=get_logger()
 
-# from gitcommit.modules import getGitRoot, processArgs, parseInput, gitStatus, helpCommands
-from gitcommit.modules import parseInput, process_project, getGitRoot, helpCommands
+from gitcommit.core import parseInput, helpCommands
+from gitcommit.modules.git_commands import get_git_root, git_status
+from gitcommit.files.pyproject_class import PyProjectManager
+# from gitcommit.files.change_log import generate_changelog
+# from gitcommit.files.update_library import update_library
+# from gitcommit.files.update_pyproject import update_pyproject
+# from gitcommit.files.process_project import process_project
+# from gitcommit.modules.git_commands import git_status
+from gitcommit.modules.check_args import check_version
 
 
-def is_git_repo(path):
-    """Verifica se la directory è un repository Git."""
-    git_dir = os.path.join(path, ".git")
-    return os.path.isdir(git_dir)
+# def commit_project(project: lnDict) -> None:
+#     # cmd_list: list[str] = []
+#     cmd_list = project.cmd_list
+#     import pdb; pdb.set_trace(); # by Loreto
+#     flags = project.flags
+#     args = pv["input_args"]
+
+#     if not any([flags.commit, flags.push]):
+#         return True
 
 
-def commit_project(project: lnDict) -> None:
-    cmd_list: list[str] = []
-    flags = project.flags
-    args = pVars["input_args"]
+#     if flags.commit:
+#         cmd_list.insert(0, "git add .")
+#         cmd_list.insert(1, f'git commit -m \"{flags.description}\"')
+#         if args.push:
+#             cmd_list.append("git push")
 
-    if not any([flags.commit, flags.push]):
-        return True
+#     if flags.push:
+#         if "git push" not in cmd_list:
+#             cmd_list.append("git push")
 
+#     # display command list
+#     print()
+#     logger.info(f"- {C.white}%s [commit->%s push->%s]", project.name, flags.commit, flags.push)
+#     for cmd in cmd_list:
+#         logger.info(cmd, color=C.magentaH)
 
-    if flags.commit:
-        cmd_list.append("git add .")
-        cmd_list.append(f'git commit -m \"{flags.description}\"')
-        if args.push:
-            cmd_list.append("git push")
+#     # prompt per esecuzione comandi
+#     choice=keyboardPrompt(text_msg=f"project: {project.name} -  enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
+#     if choice[0] == "--go":
+#         _fExecute = True ### forcing
+#         '''devo di nuovo processare, prima di procedereffettivamente,
+#             perché alcuni file potrebbero essere stati modificati
+#             (CHANGELOG.MD o pyproject.toml, o altri)'''
 
-    if flags.push:
-        if "git push" not in cmd_list:
-            cmd_list.append("git push")
-
-    # display command list
-    print()
-    logger.info(f"- {C.white}%s [commit->%s push->%s]", project.name, flags.commit, flags.push)
-    for cmd in cmd_list:
-        logger.info(cmd, color=C.magentaH)
-
-    # prompt per esecuzione comandi
-    choice=keyboardPrompt(text_msg=f"project: {project.name} -  enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
-    if choice[0] == "--go":
-        _fExecute = True ### forcing
-        '''devo di nuovo processare, prima di procedereffettivamente,
-            perché alcuni file potrebbero essere stati modificati
-            (CHANGELOG.MD o pyproject.toml, o altri)'''
-
-    # Esecuzione dei comandi
-    for cmd in cmd_list:
-        lnRun(cmd, fExecute=False, cwd=project.path, timeout=300, logger_level="info", stacklevel=1)
-    logger.notify(f"{C.yellowH}{project.name}: {C.yellow} 🚀 commit/push done!",  color=C.green)
-    # return True
+#     # Esecuzione dei comandi
+#     for cmd in cmd_list:
+#         lnRun(cmd, fExecute=False, cwd=project.path, timeout=300, logger_level="info", stacklevel=1)
+#     logger.notify(f"{C.yellowH}{project.name}: {C.yellow} 🚀 commit/push done!",  color=C.green)
+#     # return True
 
 
 
@@ -98,24 +94,29 @@ def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
 #  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -
 #################################################################
 def main():
+    if 'debugpy' in sys.modules:
+        print(os.environ.get("ZED_APP_PATH"))
+        print(os.environ.get("ZED_ENVIRONMENT"))
+        print(os.environ.get("ZED_TERM"))
+        print(os.environ.get("TERM_PROGRAM"))
+
     ctx.set_project_name("gitCommit")
 
     #### 1. logger initializzation
     logger=init_logger(logger_name="gitCommit", test=False)
 
-    #### 2. read static project list file
+    #### 2. read static project_list file
     yaml_engine=get_yaml_engine(search_paths=[ctx.get_conf_dir()], recursive=True)
     config_file = ctx.get_conf_dir() / "projects_list.yaml"
     config_data: lnDict = lnDict(yaml_engine.load(str(config_file)))
 
-    #### 3. initialize project variables
-    pVars.update(config_data)
+    #### 3. initialize project variables (pv)
+    pv.update(config_data)
 
     #### 4. processo input arguments....
     args = parseInput()
-    pVars["input_args"]=vars(args) # include args in project_vars
-    pVars.save_yaml(filepath=ctx.get_log_dir() / "project_vars.yaml", title="project_vars", indent=4)
-
+    pv["input_args"]=vars(args) # include args in project_vars
+    pv.save_yaml(filepath=ctx.get_log_dir() / "project_vars.yaml", title="project_vars", indent=4)
 
     # -----------------------------------------
     # - update logger as requested by input arguments
@@ -127,7 +128,7 @@ def main():
     # - print project variables if requested
     # -----------------------------------------
     if args.vars:
-        print(pVars)
+        print(pv)
         sys.exit(0)
 
     # -----------------------------------------
@@ -140,17 +141,18 @@ def main():
 
 
     # -----------------------------------------
-    # - get current dir  project info
+    # - get current project git_dir
     # -----------------------------------------
-    _rcode, prj_top_dir = getGitRoot(os.path.curdir)
-    prj_top_dir=Path(prj_top_dir)
+    prj_git_dir = Path(get_git_root(os.path.curdir))
 
     # -----------------------------------------
     # - create pyLnLib.zip if requested
     # -----------------------------------------
     if args.ziplib:
-        pyLnLib_path = pVars.root_dirs.pyLnLib_dir /  "src/pyLnLib"
-        zipDir(source_dir=pyLnLib_path, output_zip=prj_top_dir / "pyLnLib.zip")
+        pyLnLib_path = pv.root_dirs.pyLnLib_dir /  "src/pyLnLib"
+        zipDir(source_dir=pyLnLib_path, output_zip=prj_git_dir / "pyLnLib.zip")
+        sys.exit(0)
+
 
 
 
@@ -159,14 +161,13 @@ def main():
     ### -----------------------------
     projects_list: list[str] = [] # lista dei nomi dei progetti da processare
     if args.scan:
-        projects_list = pVars.git_project.keys()
+        projects_list = pv.git_project.keys() # leggili dalla configurazione
     else:
-        projects_list = [prj_top_dir.name]
-        git_prj=pVars.git_project[prj_top_dir.name]
-        check_args(git_prj=git_prj)
+        projects_list = [prj_git_dir.name]
+        # git_prj=pv.git_project[prj_git_dir.name]
 
     projectsToProcess = lnDict()
-    pylnlib_commit_nr = check_pyLnLib(pVars.git_project_dirs["pyLnLib"])
+    pylnlib_commit_nr = check_pyLnLib(pv.git_project["pyLnLib"])
     ### -----------------------------
     ### - - prepara un dict per contenere i progetti da fare commit/push
     ### - - tutti i flag dello stato saranno modificati a dovere
@@ -174,9 +175,28 @@ def main():
     ### - - pyLnLib comunque compare....
     ### -----------------------------
     for prj_name in projects_list[:]:
-        git_project = pVars.git_project_dirs[prj_name]
+        git_project = pv.git_project[prj_name]
         git_project["name"] = prj_name
+
         if git_project.python:
+            git_project.commit, git_project.push = git_status(git_root=git_project.path)
+            pyproject = PyProjectManager(git_root=git_project.path) # prepara pyProject objec
+            git_project.last_version = pyproject.get_version()
+            check_version(git_prj=git_project)
+
+            # check_args(git_prj=git_project)
+            print(git_project); print(); sys.exit("uscita temporanea")
+            # if args.changelog:
+
+            # git_project.new_version = processVersion(args=args, last_version=git_project.last_version)
+            # if git_project.new_version != git_project.last_version:
+                # args.changelog = True
+
+
+
+            cmd_list, commit_description = check_args(git_prj=git_project)
+            git_project["cmd_list"] = cmd_list
+            git_project["commit_description"] = commit_description
             git_project["flags.pylnlib_commit_nr"] = pylnlib_commit_nr
         if process_project(project=git_project):
             projectsToProcess[prj_name] = git_project
@@ -219,7 +239,7 @@ def main():
 #     import pdb; pdb.set_trace(); # by Loreto
 
 #     #### 2. initialize project variables
-#     pVars.update(loadJsonVarsStruct())
+#     pv.update(loadJsonVarsStruct())
 
 #     #### 3. processo input arguments....
 #     args = parseInput()

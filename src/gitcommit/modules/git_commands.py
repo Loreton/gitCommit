@@ -26,12 +26,25 @@ def _runGitCommand(git_command: str, fExecute: bool = False, cwd: str|None = Non
 
 
 
+
+def is_git_repo(path: str) -> bool:
+    """Verifica se la directory è un repository Git."""
+    git_dir = os.path.join(path, ".git")
+    return os.path.isdir(git_dir)
+
 ###################################################
 #
 ###################################################
-def getGitRoot(git_root: str|None = None) -> tuple[int, str]:
+def get_git_root(git_root: str = None) -> str:
     rcode, stdout = _runGitCommand("git rev-parse --show-toplevel", fExecute=True, cwd=git_root)
-    return rcode, stdout.strip()
+    if rcode != 0:
+        logger.error("get_git_root: path is not a git repository: %s", git_root, exit=True)
+
+    path = stdout.strip()
+    if not is_git_repo(path):
+        logger.error("get_git_root: path is not a git repository: %s", path, exit=True)
+
+    return path
 
 
 ###################################################
@@ -42,11 +55,6 @@ def get_last_tag(git_root: str|None = None) -> tuple[int, str]:
     tag = "v0.0.0" if rcode else stdout.strip()
     return rcode, tag
 
-
-def is_git_repo(path: str) -> bool:
-    """Verifica se la directory è un repository Git."""
-    git_dir = os.path.join(path, ".git")
-    return os.path.isdir(git_dir)
 
 
 ######################################################

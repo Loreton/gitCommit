@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 13-07-2026 18.48.16
+# Date .........: 17-07-2026 13.43.19
 #
 
 # import sys
@@ -18,7 +18,7 @@ from pyLnLib.colors import  get_colors
 from pyLnLib.context import  get_project_vars
 from pyLnLib.lndict import  lnDict
 
-from .git_commands import git_status
+from gitcommit.modules.git_commands import git_status
 
 logger = get_logger()
 C = get_colors()
@@ -59,7 +59,7 @@ def set_description(project: lnDict) -> str:
         flags.description = args.description
 
     if project.python and flags.pylnlib_commit_nr and project.name != "pyLnLib":
-        flags.description = f"pylnlib_commit_nr: {flags.pylnlib_commit_nr} - {flags.description}"
+        flags.description = f"{flags.description} (pylnlib commit#: {flags.pylnlib_commit_nr})"
 
     return flags.description
 

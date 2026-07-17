@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 05-07-2026 15.01.16
+# Date .........: 17-07-2026 13.44.49
 #
 
 import sys; sys.dont_write_bytecode = True
@@ -9,15 +9,16 @@ from datetime import datetime
 from pathlib import Path
 
 ### - project modules
-from .get_last_tag import get_last_tag
+# from .get_last_tag import get_last_tag
 from pyLnLib import  get_logger, lnRun
 logger=get_logger()
 
 ###################################################
 # ---- changelog avanzato ----
 ###################################################
-def generate_changelog(version: str, fExecute: bool, gitRoot: str):
-    changelog_path = Path(gitRoot) / "CHANGELOG.md"
+# def generate_changelog(version: str, fExecute: bool, gitRoot: str):
+def generate_changelog(git_prj: lnDict):
+    changelog_path = git_prj.path / "CHANGELOG.md"
     last_tag = "v0.0.0"
 
     # trova ultimo tag nel changelog

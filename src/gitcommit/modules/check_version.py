@@ -65,20 +65,10 @@ def check_version_XXX(project: lnDict) -> None:
 ###################################################
 def get_version(project: lnDict):
     args = get_project_vars("input_args")
-    flags = project["flags"]
 
     # ----------------------------
     # - determina versione
     # ----------------------------
-    # if args.scan:
-    #     """ ignoriamo la versione e facciamo solo commit e push di tutto quello che c'è da fare... """
-    #     flags.last_tag = get_last_tag(gitRoot=project.path)
-    #     flags.new_tag = flags.last_tag
-    #     flags.fNewVersion, flags.version = checkVersion(flags.last_tag)
-    #     flags.new_tag = f"v{flags.version}"
-    #     # args.description=f"{args.description} (Release {flags.version})"
-    #     flags.commit_description=f"{args.description} (Release {flags.version})"
-
     if args.version:
         ''' è stato chiesto un upgrade di version... '''
         version = args.version.lstrip("v")
