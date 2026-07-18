@@ -50,11 +50,42 @@ def get_git_root(git_root: str = None) -> str:
 ###################################################
 #
 ###################################################
-def get_last_tag(git_root: str|None = None) -> tuple[int, str]:
+def __get_last_tag(git_root: str) -> str:
     rcode, stdout = _runGitCommand("git describe --tags --abbrev=0", fExecute=True, cwd=git_root)
+    # rcode, stdout = _runGitCommand("git tag --sort=-v:refname | head -n 1", fExecute=True, cwd=git_root)
     tag = "v0.0.0" if rcode else stdout.strip()
-    return rcode, tag
+    return tag
 
+
+def get_last_tag(git_root: str) -> str|None:
+    """
+    Recupera l'ultimo tag dal repository git
+
+    Returns:
+        str: L'ultimo tag trovato, None se non ci sono tag
+    """
+    logger.debug("Recupero ultimo tag dal repository...")
+
+    # Esegui git describe
+    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, fExecute=True )
+
+    # Comando eseguito con successo e c'è output
+    if _rcode == 0 and stdout:
+        tag = stdout.strip()
+        logger.debug(f"Ultimo tag trovato: {tag}")
+        return tag
+
+    # Nessun tag nel repository
+    if _rcode != 0 and "No names found" in _stderr:
+        logger.debug("Nessun tag trovato nel repository (repository senza tag)")
+        return None
+
+    # Altri errori (es. non è un repository git)
+    if _rcode != 0:
+        logger.warning(f"Impossibile recuperare l'ultimo tag: {_stderr.strip()}")
+        return None
+
+    return None
 
 
 ######################################################

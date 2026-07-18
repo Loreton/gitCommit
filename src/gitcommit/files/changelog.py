@@ -4,77 +4,253 @@
 # Date .........: 17-07-2026 13.44.49
 #
 
-import sys; sys.dont_write_bytecode = True
+import sys
+sys.dont_write_bytecode = True
 from datetime import datetime
 from pathlib import Path
+from typing import List, Dict, Optional, Tuple
 
 ### - project modules
-# from .get_last_tag import get_last_tag
-from pyLnLib import  get_logger, lnRun
-logger=get_logger()
+from pyLnLib import get_logger, lnRun
+logger = get_logger()
 
-###################################################
-# ---- changelog avanzato ----
-###################################################
-# def generate_changelog(version: str, fExecute: bool, gitRoot: str):
-def generate_changelog(git_prj: lnDict):
-    changelog_path = git_prj.path / "CHANGELOG.md"
-    last_tag = "v0.0.0"
 
-    # trova ultimo tag nel changelog
-    if changelog_path.exists():
-        with open(changelog_path, "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("## v"):
-                    # last_tag = line.split()[1].lstrip("v")
-                    last_tag = line.split()[1]
-                    break
-    else:
-        last_tag = get_last_tag(gitRoot=gitRoot)
+class ChangeLogManager:
+    """Gestisce la generazione e aggiornamento di CHANGELOG.md secondo Conventional Commits"""
 
-    log_range = f"{last_tag}..HEAD" if last_tag else "HEAD"
-    log_range = "HEAD"
+    # Mappatura dei tipi di commit alle sezioni del changelog
+    COMMIT_TYPES = {
+        'feat': '## 🚀 New Features',
+        'fix': '## 🐛 Bug Fixes',
+        'perf': '## ⚡ Performance Improvements',
+        'refactor': '## 🔧 Code Refactoring',
+        'docs': '## 📚 Documentation',
+        'style': '## 🎨 Code Style',
+        'test': '## ✅ Tests',
+        'chore': '## 🔨 Maintenance',
+        'ci': '## 🏗️ CI/CD',
+        'build': '## 📦 Build System',
+        'revert': '## ↩️ Reverts',
+        'breaking': '## 💥 Breaking Changes'  # Speciale per breaking changes
+    }
 
-    # prendi commit reali (no merge) e filtra release/chore/docs
-    _rcode, stdout, _stderr = lnRun(f'git log {log_range} --pretty=format:"%s" --no-merges', cwd=gitRoot, fExecute=True)
-    commits_raw = stdout.splitlines()
+    # Tipi che NON devono apparire nel changelog (di solito)
+    IGNORE_TYPES = ['chore', 'style', 'ci', 'build']  # opzionale, puoi escluderli
 
-    if not commits_raw:
-        logger.info("Nessun commit rilevante per il changelog.")
-        return False
+    def __init__(self, git_root: str, new_version: str, last_tag: str|None = None):
+        """
+        Inizializza il manager del changelog
 
-    features, fixes = [], []
-    for c in commits_raw:
-        lc = c.lower()
-        if lc.startswith("feat:"):
-            features.append(c[5:].strip())
-        elif lc.startswith("fix:"):
-            fixes.append(c[4:].strip())
-        elif lc.startswith("chore:") or lc.startswith("docs:") or lc.startswith("release"):
-            continue
+        Args:
+            git_root: Percorso della root del repository git
+            new_version: Nuova versione da rilasciare
+            last_tag: Ultimo tag (opzionale, se non fornito verrà ricavato)
+        """
+        # self.git_root = Path(git_root)
+        self.git_root = git_root
+        # self.changelog_path = self.git_root / "CHANGELOG.md"
+        self.changelog_path = Path(git_root) / "CHANGELOG.md"
+        self.new_version = new_version
+        self.last_tag = last_tag
+
+        # Se non abbiamo il tag, proviamo a ricavarlo
+        if self.last_tag is None:
+            self.last_tag = self._get_last_tag()
+
+
+    def _get_last_tag(self) -> Optional[str]:
+        """Recupera l'ultimo tag dal repository git"""
+        _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=self.git_root, fExecute=True )
+        if _rcode == 0 and stdout:
+            return stdout.strip()
+        return None
+
+    def _get_commits_since_last_tag(self) -> List[str]:
+        """
+        Recupera i commit dall'ultimo tag fino a HEAD
+        Esclude i commit di merge
+        """
+        if self.last_tag:
+            log_range = f"{self.last_tag}..HEAD"
         else:
-            fixes.append(c.strip())
+            # Se non c'è un tag, prendi tutti i commit
+            log_range = "HEAD"
+            logger.warning("Nessun tag trovato, prendo tutti i commit dalla storia")
 
-    if not features and not fixes:
-        logger.info("Nessun commit rilevante dopo filtro, skip changelog.")
-        return False
+        # Comando git: prendiamo anche l'hash per eventuale debug
+        _rcode, stdout, _stderr = lnRun( f'git log {log_range} --pretty=format:"%h|%s" --no-merges', cwd=self.git_root, fExecute=True )
+        if stdout:
+            return stdout.splitlines()
+        return []
 
-    today = datetime.now().strftime("%Y-%m-%d")
-    new_section = f"## v{version} - {today}\n\n"
+    def _parse_commit(self, commit_line: str) -> Tuple[Optional[str], str]:
+        """
+        Parsa un commit nel formato "hash|messaggio"
+        Restituisce (tipo, messaggio_clean)
+        """
+        if '|' not in commit_line:
+            return None, commit_line.strip()
 
-    if features:
-        new_section += "### Features\n" + "\n".join(f"- {f}" for f in features) + "\n\n"
-    if fixes:
-        new_section += "### Fixes\n" + "\n".join(f"- {f}" for f in fixes) + "\n\n"
+        _hash, message = commit_line.split('|', 1)
+        message = message.strip()
 
-    if not fExecute:
-        # preview colorata
-        logger.notify("=== CHANGELOG.md preview ===")
-        for line in new_section.splitlines():
-            logger.info(line)
-    else:
-        old_content = changelog_path.read_text(encoding="utf-8") if changelog_path.exists() else ""
-        changelog_path.write_text(new_section + old_content, encoding="utf-8")
-        logger.notify("CHANGELOG.md aggiornato.")
+        # Cerca il tipo di commit (formato conventional commits)
+        # Esempi: "feat: add new feature" o "fix(api): resolve bug"
+        import re
+        match = re.match(r'^(\w+)(?:\([^)]+\))?:\s*(.*)$', message)
 
-    return True
+        if match:
+            commit_type = match.group(1).lower()
+            commit_message = match.group(2).strip()
+            return commit_type, commit_message
+
+        # Se non è conventional commit, lo mettiamo come "other"
+        return 'other', message
+
+    def _categorize_commits(self, commits: List[str]) -> Dict[str, List[str]]:
+        """
+        Categorizza i commit per tipo
+        """
+        categorized = {}
+
+        for commit_line in commits:
+            commit_type, message = self._parse_commit(commit_line)
+
+            # Se il tipo è da ignorare, salta
+            if commit_type in self.IGNORE_TYPES:
+                continue
+
+            # Se è un breaking change, lo segnaliamo
+            if '!' in commit_type:  # Esempio: "feat!: breaking change"
+                commit_type = 'breaking' # tyne
+
+            if commit_type not in categorized:
+                categorized[commit_type] = []
+            categorized[commit_type].append(message)
+
+        return categorized
+
+    def _generate_section(self, categorized: Dict[str, List[str]]) -> str:
+        """
+        Genera la sezione del changelog per la nuova versione
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        section = f"## [{self.new_version}] - {today}\n\n"
+
+        # Ordine di priorità per le sezioni
+        priority_order = ['breaking', 'feat', 'fix', 'perf', 'refactor', 'docs', 'test', 'other']
+
+        for commit_type in priority_order:
+            if commit_type in categorized and categorized[commit_type]:
+                # Prendi il titolo della sezione dalla mappatura
+                title = self.COMMIT_TYPES.get(commit_type, f"## {commit_type.capitalize()}")
+                section += f"{title}\n\n"
+                for message in categorized[commit_type]:
+                    section += f"- {message}\n"
+                section += "\n"
+
+        # Aggiungi i tipi non gestiti
+        for commit_type, messages in categorized.items():
+            if commit_type not in priority_order:
+                title = self.COMMIT_TYPES.get(commit_type, f"## {commit_type.capitalize()}")
+                section += f"{title}\n\n"
+                for message in messages:
+                    section += f"- {message}\n"
+                section += "\n"
+
+        return section
+
+    def update(self, f_execute: bool = True) -> bool:
+        """
+        Aggiorna il file CHANGELOG.md con i commit dall'ultimo tag
+
+        Args:
+            f_execute: Se True scrive il file, altrimenti dry-run
+
+        Returns:
+            bool: True se l'operazione è riuscita
+        """
+        # 1. Recupera i commit
+        commits = self._get_commits_since_last_tag()
+
+        if not commits:
+            logger.info("Nessun commit trovato dall'ultimo tag")
+            return False
+
+        # 2. Categorizza i commit
+        categorized = self._categorize_commits(commits)
+
+        if not categorized:
+            logger.info("Nessun commit significativo trovato (tutti ignorati)")
+            return False
+
+        # 3. Genera la nuova sezione
+        new_section = self._generate_section(categorized)
+
+        # 4. Preview o scrittura
+        if not f_execute:
+            logger.info("=== CHANGELOG.md preview (dry-run) ===")
+            logger.info(f"Versione: {self.new_version}")
+            logger.info(f"Commit trovati: {len(commits)}")
+            logger.info("\n" + new_section)
+            return True
+
+        # 5. Leggi il contenuto esistente o crea nuovo file
+        if self.changelog_path.exists():
+            old_content = self.changelog_path.read_text(encoding="utf-8")
+        else:
+            # Se il file non esiste, creiamo un'intestazione
+            old_content = "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n"
+
+        # 6. Scrivi il nuovo contenuto (la nuova sezione in cima)
+        new_content = new_section + old_content
+        self.changelog_path.write_text(new_content, encoding="utf-8")
+
+        logger.notify(f"✅ CHANGELOG.md aggiornato con versione {self.new_version}")
+        return True
+
+    def get_summary(self) -> Dict[str, int]:
+        """
+        Ottiene un riepilogo dei commit per tipo (utile per debug)
+        """
+        commits = self._get_commits_since_last_tag()
+        categorized = self._categorize_commits(commits)
+
+        summary = {}
+        for commit_type, messages in categorized.items():
+            summary[commit_type] = len(messages)
+
+        return summary
+
+
+# Funzione di compatibilità con il tuo codice esistente
+def generate_changelog(git_prj, f_execute: bool = True) -> bool:
+    """
+    Funzione di compatibilità per generare il changelog
+
+    Args:
+        git_prj: Oggetto con attributi path, new_version, last_tag
+        f_execute: Se True esegue la scrittura
+    """
+    manager = ChangeLogManager(
+        git_root=git_prj.path,
+        new_version=git_prj.new_version,
+        last_tag=getattr(git_prj, 'last_tag', None)
+    )
+    return manager.update(f_execute)
+
+
+# Esempio di utilizzo
+if __name__ == "__main__":
+    # Utilizzo con la classe
+    manager = ChangeLogManager(".", "1.2.0")
+
+    # Preview (dry-run)
+    manager.update(f_execute=False)
+
+    # Stampa riepilogo
+    summary = manager.get_summary()
+    logger.info(f"Riepilogo commit: {summary}")
+
+    # Esecuzione reale
+    # manager.update(f_execute=True)

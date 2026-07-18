@@ -11,7 +11,7 @@
 # from pathlib import Path
 
 ### - project modules
-import cmd
+# import cmd
 
 from pyLnLib.logger import  get_logger
 from pyLnLib.colors import  get_colors

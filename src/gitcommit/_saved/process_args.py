@@ -4,9 +4,8 @@
 # Date .........: 07-07-2026 21.25.20
 #
 
-import sys
-from webbrowser import get; sys.dont_write_bytecode = True
-import re
+# import sys
+# sys.dont_write_bytecode = True
 
 ### - project modules
 from pyLnLib           import  get_logger, get_project_vars, lnDict
