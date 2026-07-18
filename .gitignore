@@ -1,7 +1,60 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# ⭐ I TUOI FILE SALVATI
+_saved/
+*.bak
+*.backup
+*.tmp
+
+# Project specific
+src/gitcommit/_saved/
+
 *.egg-info/
 dist/
 build/

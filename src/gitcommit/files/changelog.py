@@ -37,7 +37,8 @@ class ChangeLogManager:
     # Tipi che NON devono apparire nel changelog (di solito)
     IGNORE_TYPES = ['chore', 'style', 'ci', 'build']  # opzionale, puoi escluderli
 
-    def __init__(self, git_root: str, new_version: str, last_tag: str|None = None):
+    # def __init__(self, git_root: str, new_version: str, last_tag: str|None = None):
+    def __init__(self, git_root: str, last_tag: str|None = None):
         """
         Inizializza il manager del changelog
 
@@ -50,17 +51,17 @@ class ChangeLogManager:
         self.git_root = git_root
         # self.changelog_path = self.git_root / "CHANGELOG.md"
         self.changelog_path = Path(git_root) / "CHANGELOG.md"
-        self.new_version = new_version
-        self.last_tag = last_tag
+        # self.new_version = new_version
+        # self.last_tag = last_tag
 
         # Se non abbiamo il tag, proviamo a ricavarlo
-        if self.last_tag is None:
-            self.last_tag = self._get_last_tag()
+        # if self.last_tag is None:
+            # self.last_tag = self._get_last_tag()
 
 
     def _get_last_tag(self) -> Optional[str]:
         """Recupera l'ultimo tag dal repository git"""
-        _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=self.git_root, fExecute=True )
+        _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=self.git_root, f_execute=True )
         if _rcode == 0 and stdout:
             return stdout.strip()
         return None
@@ -78,7 +79,7 @@ class ChangeLogManager:
             logger.warning("Nessun tag trovato, prendo tutti i commit dalla storia")
 
         # Comando git: prendiamo anche l'hash per eventuale debug
-        _rcode, stdout, _stderr = lnRun( f'git log {log_range} --pretty=format:"%h|%s" --no-merges', cwd=self.git_root, fExecute=True )
+        _rcode, stdout, _stderr = lnRun( f'git log {log_range} --pretty=format:"%h|%s" --no-merges', cwd=self.git_root, f_execute=True )
         if stdout:
             return stdout.splitlines()
         return []
@@ -160,7 +161,7 @@ class ChangeLogManager:
 
         return section
 
-    def update(self, f_execute: bool = True) -> bool:
+    def update(self, new_version: str, last_tag: str|None = None, f_execute: bool = True) -> bool:
         """
         Aggiorna il file CHANGELOG.md con i commit dall'ultimo tag
 
@@ -170,6 +171,13 @@ class ChangeLogManager:
         Returns:
             bool: True se l'operazione è riuscita
         """
+        self.new_version = new_version
+        self.last_tag = last_tag
+
+        # Se non abbiamo il tag, proviamo a ricavarlo
+        if self.last_tag is None:
+            self.last_tag = self._get_last_tag()
+
         # 1. Recupera i commit
         commits = self._get_commits_since_last_tag()
 
@@ -190,9 +198,11 @@ class ChangeLogManager:
         # 4. Preview o scrittura
         if not f_execute:
             logger.info("=== CHANGELOG.md preview (dry-run) ===")
-            logger.info(f"Versione: {self.new_version}")
-            logger.info(f"Commit trovati: {len(commits)}")
-            logger.info("\n" + new_section)
+            logger.info(f"Version: {self.new_version}")
+            logger.info(f"Last_tag: {self.last_tag}")
+            logger.info(f"Commit found: {len(commits)}")
+            logger.debug("\n" + new_section)
+            logger.info("=== CHANGELOG.md end (dry-run) ===")
             return True
 
         # 5. Leggi il contenuto esistente o crea nuovo file

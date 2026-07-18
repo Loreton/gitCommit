@@ -42,9 +42,9 @@ def validate(version):
 
 
 ###################################################
-#
+# return tag flag
 ###################################################
-def check_version(git_prj: lnDict):
+def version(git_prj: lnDict) ->bool:
     args=get_project_vars("input_args")
 
     if args.version:
@@ -62,100 +62,43 @@ def check_version(git_prj: lnDict):
 
     validate(git_prj.new_version)
 
-    if git_prj.new_version != git_prj.last_version:
-        args.changelog = True
-
-    return
-
-
-
-
-
-
-###################################################
-#
-###################################################
-def check_args(git_prj: lnDict) -> tuple[list[str], str]:
-    args=get_project_vars("input_args")
-
-    # ----------------------------
-    # - read git status
-    # ----------------------------
-    # git_prj.commit, git_prj.push = git_status(git_root=git_prj.path)
-    fNewVersion=None
-    cmdList = []
-    commit_description = str()
-
-    if args.scan:
-        from datetime import datetime
-        git_prj.push = git_prj.commit
-        now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-        commit_description =f"update on {now}" ### force
-
+    # controllo della versione (escludendo il minor version)
+    if git_prj.new_version[:-2] != git_prj.last_version[:-2] or args.tag:
+        set_tag = True # forziamo  tag
     else:
-        """ ignoriamo la versione e facciamo solo commit e push di tutto quello che c'è da fare... """
-        # last_tag = get_last_tag(gitRoot=git_prj.path)
-        # new_tag = last_tag
-        git_prj.new_version = git_prj.last_version
-        processVersion(args=args, last_version=git_prj.last_version)
-        if git_prj.new_version != git_prj.last_version:
-            args.changelog = True
-        # new_tag = f"v{version}"
-        # commit_description=f"{args.description} (Release {version})"
+        set_tag = args.tag
 
-        # ----------------------------
-        # - changelog
-        # ----------------------------
-        if args.changelog:
-            updated_changelog = generate_changelog(version=version, fExecute=args.go, gitRoot=git_prj.path)
-            if updated_changelog and git_prj.commit:
-                cmdList.append("git add CHANGELOG.md")
+    if set_tag:
+        logger.notify("=== RELEASE PLAN ===")
+        logger.info("Last tag: %s", git_prj.last_tag)
+        logger.info("new  tag: v%s", git_prj.new_version)
+        if f"v{git_prj.new_version}" == git_prj.last_tag:
+            logger.warning("Stai chiedendo il tag ma è uguale al corrente tag.")
+            logger.warning("L'opzione verrà ignorata!")
+            set_tag = False
 
 
-        # ----------------------------
-        # - tag
-        # ----------------------------
-        if args.tag:
-            if new_tag == last_tag:
-                logger.warning("Stai chiedendo il tag ma non è stato richiesto alcun incremento per la versione.")
-                logger.warning("L'opzione verrà ignorata!")
-                args.tag = False
-            else:
-                # ---- update library.json ----
-                updated = update_library(version=version, fExecute=args.go, gitRoot=git_prj.path)
-                if updated and git_prj.commit:
-                    cmdList.append("git add library.json")
-
-                updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=git_prj.path)
-                if updated and git_prj.commit:
-                    cmdList.append("git add pyproject.toml")
-
-                cmd = f'git tag -a "{new_tag}"'
-                if fNewVersion: cmd = f'{cmd} -m "Release {version}"'
-                cmdList.append(cmd)
-
-            logger.notify("=== RELEASE PLAN ===")
-            logger.info("Last tag: %s", last_tag)
-            logger.info("new  tag: %s", new_tag)
-
-    # ----------------------------
-    # - push
-    # ----------------------------
-    if args.push or git_prj.push:
-        cmdList.append("git push")
-        if args.tag:
-            cmdList.append("git push --tags")
+    return set_tag
 
 
 
-    # ----------------------------
-    # - commit ----
-    # ----------------------------
-    # if fCommit:
-        # cmd = f'git commit -m "{args.description}"'
-        # cmd = f'git commit -m "{commit_description}"'
-        # cmdList.insert(0, cmd)
-        # cmdList.insert(0, "git add .")
+# def tag(git_prj: lnDict) -> bool:
+#     if git_prj.tag:
+#         if git_prj.new_tag == git_prj.last_tag:
+#             logger.warning("Stai chiedendo il tag ma non è stato richiesto alcun incremento per la versione.")
+#             logger.warning("L'opzione verrà ignorata!")
+#             args.tag = False
+#         else:
+#             updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=git_prj.path)
+#             if updated and git_prj.commit:
+#                 cmdList.append("git add pyproject.toml")
 
+#             cmd = f'git tag -a "{new_tag}"'
+#             if fNewVersion: cmd = f'{cmd} -m "Release {version}"'
+#             cmdList.append(cmd)
 
-    return cmdList, commit_description
+#         logger.notify("=== RELEASE PLAN ===")
+#         logger.info("Last tag: %s", last_tag)
+#         logger.info("new  tag: %s", new_tag)
+
+#     return False

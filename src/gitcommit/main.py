@@ -17,7 +17,7 @@ from     pyLnLib.context   import ctx, get_project_vars
 from     pyLnLib.colors    import get_colors
 from     pyLnLib.logger    import get_logger, init_logger
 from     pyLnLib.system    import lnRun
-# from     pyLnLib            import keyboardPrompt
+from     pyLnLib            import keyboardPrompt
 from     pyLnLib.files     import zipDir, get_yaml_engine
 from     pyLnLib.lndict     import lnDict
 
@@ -29,15 +29,31 @@ from gitcommit.core import parseInput, helpCommands
 from gitcommit.modules.git_commands import get_git_root, git_status, get_last_tag
 from gitcommit.files.pyproject_class import PyProjectManager
 from gitcommit.files.changelog import ChangeLogManager
-from gitcommit.modules.check_args import check_version
+# from gitcommit.modules.check_args import check_version
+from gitcommit.modules import check_args
 
 
+
+
+def prepare_cmd_list(git_prj: lnDict) -> list:
+    cmd_list: list = []
+
+    cmd_list.append("git add .")
+    cmd_list.append(f"git commit -m \"{git_prj.description}\"")
+
+    if git_prj.push:
+        cmd_list.append("git push")
+    if git_prj.set_tag:
+        cmd_list.append(f"git tag -a v{git_prj.new_version} -m Release {git_prj.new_version}")
+        cmd_list.append("git push --tags")
+
+    return cmd_list
 
 #===================================================
 #
 #===================================================
 def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
-    rcode, stdout, stderr = lnRun("git log -1 --oneline", fExecute=True, cwd=project.path, stacklevel=2 )
+    rcode, stdout, stderr = lnRun("git log -1 --oneline", f_execute=True, cwd=project.path, stacklevel=2 )
     if rcode != 0:
         logger.error(f"getGitRoot: failed to get git root: {stderr}", exit=True)
     return  stdout.split()[0]
@@ -118,9 +134,8 @@ def main():
         projects_list = pv.git_project.keys() # leggili dalla configurazione
     else:
         projects_list = [this_git_dir.name]
-        # git_prj=pv.git_project[prj_git_dir.name]
 
-    projectsToProcess = lnDict()
+    # projectsToProcess = lnDict()
     pylnlib_commit_nr = check_pyLnLib(pv.git_project["pyLnLib"])
     ### -----------------------------
     ### - - prepara un dict per contenere i progetti da fare commit/push
@@ -129,185 +144,60 @@ def main():
     ### - - pyLnLib comunque compare....
     ### -----------------------------
     for prj_name in projects_list[:]:
+        # fExecute = False
         git_project = pv.git_project[prj_name]
         git_project["name"] = prj_name
 
+        if args.scan:
+            from datetime import datetime
+            now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+            git_project.description=f"update on {now}" ### force
+        else:
+            git_project.description=f"{args.description}"
+
+        pyproject = PyProjectManager(git_root=git_project.path) # prepara pyProject object
+        chLogManager = ChangeLogManager(git_root=git_project.path) # prepara changeLog object
         if git_project.python:
             git_project.commit, git_project.push = git_status(git_root=git_project.path)
             git_project.last_tag = get_last_tag(git_root=git_project.path)
-            pyproject = PyProjectManager(git_root=git_project.path) # prepara pyProject objec
             git_project.last_version = pyproject.get_version()
-            check_version(git_prj=git_project)
-            if args.changelog:
-                manager = ChangeLogManager(git_root=git_project.path, new_version=git_project.new_version, last_tag=git_project.last_tag)
-                # Preview (dry-run)
-                manager.update(f_execute=args.go)
-                # Stampa riepilogo
-                summary = manager.get_summary()
-                logger.info(f"Riepilogo commit: {summary}")
-                print(git_project); print(); logger.info("uscita temporanea", color=C.magentaH, exit=True)
+            git_project.set_tag = check_args.version(git_prj=git_project)
+            if git_project.set_tag:
+                # - update description
+                git_project.description=f"{git_project.description} (Release {git_project.new_version}) (pylnlib_commit={pylnlib_commit_nr})"
+                # - update version
+                pyproject.update_version(git_project.new_version, f_execute=False)
+                # - update changelog
+                chLogManager.update(new_version=git_project.new_version, last_tag=git_project.last_tag, f_execute=False) # Preview (dry-run)
+                logger.info(f"Riepilogo commit: {chLogManager.get_summary()}")
 
 
 
-            if args.scan:
-                from datetime import datetime
-                now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-                commit_description =f"update on {now}" ### force
-            else:
-                commit_description=f"{args.description} (Release {git_project.new_version})"
 
 
+        print(git_project); print(); logger.info("status", color=C.magentaH, exit=False)
 
-            # cmd_list, commit_description = check_args(git_prj=git_project)
-            # git_project["cmd_list"] = cmd_list
-            git_project["commit_description"] = commit_description
-            git_project["flags.pylnlib_commit_nr"] = pylnlib_commit_nr
-        # if process_project(project=git_project):
-            # projectsToProcess[prj_name] = git_project
-
-    projectsToProcess.save_yaml(filepath=ctx.get_log_dir() / "project_vars_final.yaml", title="projects_to_be_committed", indent=4)
-
-    for prj_name in projectsToProcess.keys():
-        git_project = projectsToProcess[prj_name]
-        if git_project.cmd_list:
-            ...
-            # commit_project(project=git_project)
-            #     logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 commit/push done!",  color=C.green)
-            # else:
-            #     logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 commit/push failed!",  color=C.red)
+        cmd_list: list = prepare_cmd_list(git_prj=git_project)
+        for cmd in cmd_list:
+            logger.info(f"{cmd}")
+        choice=keyboardPrompt(text_msg="enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
+        if choice[0] == "--go":
+            '''devo di nuovo processare, prima di procedere,
+                perché alcuni file devono essere  modificati
+                (CHANGELOG.MD o pyproject.toml, o altri)'''
+            chLogManager.update(new_version=git_project.new_version, last_tag=git_project.last_tag, f_execute=True) # Preview (dry-run)
+            pyproject.update_version(git_project.new_version, f_execute=True)
+            for cmd in cmd_list:
+                lnRun(command=cmd, cwd=git_project.path, f_execute=True)
 
 
 
 
     sys.exit("processo completato!")
 
-
 #################################################################
 #  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -
 #################################################################
-# def main_prev():
-#     #### 1. logger initializzation
-#     logger=init_logger(logger_name="gitCommit", test=False)
-
-#     if config_dir := ctx.get_conf_dir() is None:
-#         logger.error("config_dir is None")
-#         return
-
-#     config_file = config_dir / "projects_list.yaml"
-#     if not config_file.exists():
-#         logger.error(f"config_file {config_file} does not exist")
-#         return
-
-
-#     config_str: dict = yaml.load(config_file, Loader=yaml.FullLoader)
-#     config = lnDict(data=config_str)
-#     import pdb; pdb.set_trace(); # by Loreto
-
-#     #### 2. initialize project variables
-#     pv.update(loadJsonVarsStruct())
-
-#     #### 3. processo input arguments....
-#     args = parseInput()
-#     pVars["input_args"]=vars(args) # include args in project_vars
-#     import pdb; pdb.set_trace();  # by Loreto
-#     #### 4. update logger as requested by input arguments
-#     logger.setNameLength(dynamic=False, length=args.log_name_length)
-#     logger.setShowCaller(show_caller=args.log_show_caller)
-
-#     # prepariamo i percorsi importanti
-#     pyLnLib_path = Path(os.path.expandvars('${ln_PY_LNLIB_DIR}'))
-#     prj_top_dir = Path.cwd().resolve()
-#     prj_repo_dir = Path(getGitRoot())
-#     git_repo_dir= Path(os.path.expandvars('${ln_GIT_REPO_DIR}'))
-
-#     # create pyLnLib.zip if requested
-#     if args.ziplib:
-#         zipDir(source_dir=pyLnLib_path / "src/pyLnLib", output_zip=prj_top_dir / "pyLnLib.zip")
-
-#     # list commands if requested
-#     if args.list_commands:
-#         commands = helpCommands()
-#         print(f"{C.green}{commands}{C.reset}")
-#         sys.exit(0)
-
-#     #### 4. prepare rootDirs for searching git projects
-#     rootDirs = []
-#     if args.scan:
-#         """ scan for git projects recursively in the current directory and in the git repo directory"""
-#         rootDirs.extend(scan_repos_recursively(prj_top_dir))
-#         rootDirs.extend(scan_repos_recursively(git_repo_dir))
-#         if confirm_dirs(rootDirs):
-#             process_scanned_dirs(rootDirs)
-#         else:
-#             sys.exit(0)
-#     else:
-#         """ use the current directory and the pyLnLib directory as the root directories"""
-#         rootDirs.append(pyLnLib_path)
-#         rootDirs.append(prj_repo_dir)
-#         if confirm_dirs(rootDirs):
-#             process_this_project(rootDirs)
-#         else:
-#             sys.exit(0)
-
-
-
-
-#     import pdb; pdb.set_trace();  # by Loreto
-#     # now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-#     primary_project_description: str|None = None
-#     primary_project_name: str|None = None
-
-
-
-
-
-#     for i, gitROOT in enumerate(rootDirs, 1):
-#         prj_name=Path(gitROOT).stem
-#         parent=Path(gitROOT).parent
-
-#         fCommit, fPush = gitStatus(git_dir=gitROOT)
-
-
-
-
-#     for i, gitROOT in enumerate(rootDirs, 1):
-#         prj_name=Path(gitROOT).stem
-#         parent=Path(gitROOT).parent
-
-#         fCommit, fPush = gitStatus(git_dir=gitROOT)
-
-#         logger.info("")
-#         logger.notify("="*50)
-#         logger.notify(f"gitROOT: {parent}/{C.yellow}{prj_name}")
-
-#         if not args.scan:
-#             if prj_name == 'pyLnLib':
-#                 commit_description = f"{primary_project_name}: {primary_project_description}"
-
-#         if fCommit:
-#             if args.go:
-#                 commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-#                 executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=True)
-
-#             else:
-#                 commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-#                 executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=False)
-#                 choice=keyboardPrompt(text_msg="enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
-#                 if choice[0] == "--go":
-#                     '''devo di nuovo processare, prima di procedereffettivamente,
-#                         perché alcuni file potrebbero essere stati modificati
-#                         (CHANGELOG.MD o pyproject.toml, o altri)'''
-
-#                     commandsList, commit_description = processArgs(fCommit=fCommit, fPush=fPush, gitRoot=gitROOT)
-#                     executeCommit(gitROOT=gitROOT, commandsList=commandsList, commit_description=commit_description, fExecute=True)
-
-#         else:
-#             logger.notify(f"{C.yellowH}{prj_name}: {C.yellow} 🚀 nothing to do!",  color=C.green)
-
-#         if i == 1:
-#             primary_project_name = prj_name
-#             primary_project_description = commit_description
-
 
 if __name__ == "__main__":
     main()

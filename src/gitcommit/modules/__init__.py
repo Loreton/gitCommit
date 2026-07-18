@@ -5,13 +5,14 @@
 #
 
 
-from .check_args            import check_args
+from .check_args            import version
 from .git_commands         import git_status, get_last_tag, is_git_repo, get_git_root
 
 __all__ = [
     'get_git_root',
-    'check_args',
+    'version',
     'get_last_tag',
     'git_status',
     'is_git_repo',
+
 ]

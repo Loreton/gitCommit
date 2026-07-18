@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gitCommit"
-version = "0.1.4"
+version = "0.1.7"
 description = ""
 readme = "README.md"
 requires-python = ">=3.14"
@@ -25,9 +25,11 @@ dev = [
 [project.scripts]
 gitcommit = "gitcommit.main:main"
 
-
 [project.license]
 text = "MIT"
+
+[tool.ruff]
+line-length = 100
 
 [tool.ruff.lint]
 ignore = [
@@ -49,9 +51,6 @@ reportMissingTypeStubs = false
 where = [
     "src",
 ]
-
-[tool.ruff]
-line-length = 100
 
 [tool.uv.sources.pylnlib]
 path = "../pyLnLib"

@@ -16,7 +16,7 @@ C = get_colors()
 
 
 def _runGitCommand(git_command: str, fExecute: bool = False, cwd: str|None = None) -> tuple[int, str]:
-    rcode, stdout, stderr = lnRun( git_command, fExecute=fExecute, cwd=cwd, stacklevel=1 )
+    rcode, stdout, stderr = lnRun( git_command, f_execute=fExecute, cwd=cwd, stacklevel=1 )
     if rcode != 0:
         logger.error("runGitCommand: failed to run git command: %s", git_command)
         logger.error("error: %s", stderr, exit=True)
@@ -50,13 +50,6 @@ def get_git_root(git_root: str = None) -> str:
 ###################################################
 #
 ###################################################
-def __get_last_tag(git_root: str) -> str:
-    rcode, stdout = _runGitCommand("git describe --tags --abbrev=0", fExecute=True, cwd=git_root)
-    # rcode, stdout = _runGitCommand("git tag --sort=-v:refname | head -n 1", fExecute=True, cwd=git_root)
-    tag = "v0.0.0" if rcode else stdout.strip()
-    return tag
-
-
 def get_last_tag(git_root: str) -> str|None:
     """
     Recupera l'ultimo tag dal repository git
@@ -67,7 +60,7 @@ def get_last_tag(git_root: str) -> str|None:
     logger.debug("Recupero ultimo tag dal repository...")
 
     # Esegui git describe
-    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, fExecute=True )
+    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, f_execute=True )
 
     # Comando eseguito con successo e c'è output
     if _rcode == 0 and stdout:

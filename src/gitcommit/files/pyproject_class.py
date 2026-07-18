@@ -101,7 +101,7 @@ class PyProjectManager:
 
         return self._data.get("project", {}).get("version", "0.0.0")
 
-    def set_version(self, new_version: str, f_execute: bool = True) -> bool:
+    def update_version(self, new_version: str, f_execute: bool = False) -> bool:
         """
         Imposta una nuova versione nel file pyproject.toml
 
@@ -135,21 +135,21 @@ class PyProjectManager:
         # Scrivi il file se richiesto
         return self.write(f_execute)
 
-    def update_version(self, new_version: str, f_execute: bool = True) -> bool:
-        """
-        Metodo alias per set_version per mantenere compatibilità con il codice esistente
+    # def update_version(self, new_version: str, f_execute: bool = True) -> bool:
+    #     """
+    #     Metodo alias per set_version per mantenere compatibilità con il codice esistente
 
-        Args:
-            new_version: Nuova versione da impostare
-            f_execute: Se True esegue la scrittura, altrimenti dry-run
+    #     Args:
+    #         new_version: Nuova versione da impostare
+    #         f_execute: Se True esegue la scrittura, altrimenti dry-run
 
-        Returns:
-            bool: True se l'operazione è riuscita, False altrimenti
-        """
-        return self.set_version(new_version, f_execute)
+    #     Returns:
+    #         bool: True se l'operazione è riuscita, False altrimenti
+    #     """
+    #     return self.set_version(new_version, f_execute)
 
     @property
-    def data(self) -> Optional[dict]:
+    def data(self) -> dict:
         """Proprietà per accedere ai dati letti"""
         if self._data is None:
             self.read()
@@ -166,26 +166,26 @@ class PyProjectManager:
 
 
 # Funzioni di compatibilità per mantenere l'interfaccia esistente
-def pyproject_read(git_root: str) -> Optional[dict]:
-    """Funzione di compatibilità per pyproject_read esistente"""
-    manager = PyProjectManager(git_root)
-    return manager.read()
+# def pyproject_read(git_root: str) -> Optional[dict]:
+#     """Funzione di compatibilità per pyproject_read esistente"""
+#     manager = PyProjectManager(git_root)
+#     return manager.read()
 
-def pyproject_write(git_root: str, data: dict, f_execute: bool) -> None:
-    """Funzione di compatibilità per pyproject_write esistente"""
-    manager = PyProjectManager(git_root)
-    manager.data = data
-    manager.write(f_execute)
+# def pyproject_write(git_root: str, data: dict, f_execute: bool) -> None:
+#     """Funzione di compatibilità per pyproject_write esistente"""
+#     manager = PyProjectManager(git_root)
+#     manager.data = data
+#     manager.write(f_execute)
 
-def pyproject_version(new_version: str, f_execute: bool, git_root: str):
-    """Funzione di compatibilità per pyproject_version esistente"""
-    manager = PyProjectManager(git_root)
-    manager.set_version(new_version, f_execute)
+# def pyproject_version(new_version: str, f_execute: bool, git_root: str):
+#     """Funzione di compatibilità per pyproject_version esistente"""
+#     manager = PyProjectManager(git_root)
+#     manager.set_version(new_version, f_execute)
 
-def update_pyproject(new_version: str, f_execute: bool, git_root: str) -> bool:
-    """Funzione di compatibilità per update_pyproject esistente"""
-    manager = PyProjectManager(git_root)
-    return manager.update_version(new_version, f_execute)
+# def update_pyproject(new_version: str, f_execute: bool, git_root: str) -> bool:
+#     """Funzione di compatibilità per update_pyproject esistente"""
+#     manager = PyProjectManager(git_root)
+#     return manager.update_version(new_version, f_execute)
 
 
 # Esempio di utilizzo

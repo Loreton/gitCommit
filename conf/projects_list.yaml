@@ -5,16 +5,16 @@ main:
 
     git_default_flags: &flags
         description: null
-        changelog: False
-        tag:       False
-        minor:     False
-        major:     False
-        patch:     False
-        version:  "0.0.0"
+        set_tag:       False
+        last_tag:       null
+        minor:     null
+        major:     null
+        patch:     null
+        new_version:  "0.0.0"
+        last_version:  "0.0.0"
         commit:  False
         push:  False
-        pylnlib_commit_nr:  None
-        # fNewVersion: False
+        pylnlib_commit_nr:  null
 
 git_project:
     gitCommit:

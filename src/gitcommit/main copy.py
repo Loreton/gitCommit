@@ -98,7 +98,7 @@ def scan_repos_recursively(base_path: str) -> list:
 def main():
     def executeCommands(fExecute: bool=False):
         for cmd in commandsList:
-            lnRun(cmd, fExecute=fExecute, cwd=gitROOT, timeout=300)
+            lnRun(cmd, f_execute=fExecute, cwd=gitROOT, timeout=300)
 
     args        = parseInput()
     ctx.args     = args
