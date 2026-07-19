@@ -70,7 +70,9 @@ def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
 #
 #===================================================
 def process_python_git_repo(project: lnDict) -> None:
-    logger.info("\n\n\t\t=== Processing python git repo: %s ===", project.path, color=C.whiteH)
+    # logger.info("\n\n\t\t=== Processing python git repo: %s ===", project.path, color=C.whiteH)
+    # logger.info("\n\n")
+    logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
     project.commit, project.push = git_status(git_root=project.path, logger_level="info")
     project.last_tag = get_last_tag(git_root=project.path)
     project.last_version = project.pyproject.get_version()
@@ -103,9 +105,9 @@ def process_python_git_repo(project: lnDict) -> None:
             project.pyproject.update_version(project.new_version, f_execute=True)
             for cmd in cmd_list:
                 lnRun(command=cmd, cwd=project.path, f_execute=True)
-
-
-
+    else:
+        logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
+    # print("\n\n")
 
 
 
@@ -185,7 +187,7 @@ def main():
         # projects_name_list.pop(pv.git_project["pyLnLib"]) # rimuovi temporaneamente pyLnLib
     else:
         # projects_name_list = ["this_git_dir.name"]
-        projects_name_list.append(pv.git_project["this_git_dir.name"])
+        projects_name_list.append(this_git_dir.name)
 
     if 'pyLnLib' not in projects_name_list: # nel caso fosse la current dir
         projects_name_list.insert(0, 'pyLnLib')
@@ -216,7 +218,7 @@ def main():
         git_project.chLogManager = ChangeLogManager(git_root=git_project.path) # prepara changeLog object
         if git_project.python:
             git_project.pyproject = PyProjectManager(git_root=git_project.path) # prepara pyProject object
-            # git_project.pylnlib_commit_nr = pylnlib_commit_nr
+            print("\n\n")
             process_python_git_repo(git_project)
 
             # git_project.commit, git_project.push = git_status(git_root=git_project.path)
