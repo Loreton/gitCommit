@@ -2,6 +2,13 @@
 
 ## Other
 
+- ci siamo quasi - (Release 0.1.7) (pylnlib_commit=3c4ccaa)
+- update on 2026.07.19 - (Release 0.1.7) (pylnlib_commit=abe63c9)
+
+## [0.1.7] - 2026-07-19
+
+## Other
+
 - update on 2026.07.19 - (Release 0.1.7) (pylnlib_commit=abe63c9)
 
 ## [0.1.7] - 2026-07-18

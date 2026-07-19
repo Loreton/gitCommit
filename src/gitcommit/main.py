@@ -33,6 +33,9 @@ from gitcommit.modules import check_args
 
 
 
+#===================================================
+#
+#===================================================
 def prepare_cmd_list(project: lnDict) -> list:
     args=get_project_vars("input_args")
     cmd_list: list = []
