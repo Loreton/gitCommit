@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 05-07-2026 14.44.48
+# Date .........: 19-07-2026 11.09.35
 #
 
 # import sys
 # sys.dont_write_bytecode = True
 import os
+from termios import PARODD
+from turtle import pd
 
 ### - project modules
 from pyLnLib import  lnRun
 from pyLnLib import  get_logger, get_colors
+from pyLnLib.logger.ln_colored_logger import StackLevel
 logger=get_logger()
 C = get_colors()
 
 
 def _runGitCommand(git_command: str, fExecute: bool = False, cwd: str|None = None) -> tuple[int, str]:
-    rcode, stdout, stderr = lnRun( git_command, f_execute=fExecute, cwd=cwd, stacklevel=1 )
+    rcode, stdout, stderr = lnRun(git_command, f_execute=fExecute, cwd=cwd, stacklevel=0)
     if rcode != 0:
         logger.error("runGitCommand: failed to run git command: %s", git_command)
         logger.error("error: %s", stderr, exit=True)
@@ -60,7 +63,7 @@ def get_last_tag(git_root: str) -> str|None:
     logger.debug("Recupero ultimo tag dal repository...")
 
     # Esegui git describe
-    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, f_execute=True )
+    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, f_execute=True, stacklevel=0)
 
     # Comando eseguito con successo e c'è output
     if _rcode == 0 and stdout:
@@ -95,7 +98,7 @@ def git_status(git_root: str, logger_level: str="warning")->tuple[bool, bool]:
     push = False
 
     for line in stdout.splitlines():
-        logger.debug(line, color=C.blue)
+        logger.info(line, color=C.blue)
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:

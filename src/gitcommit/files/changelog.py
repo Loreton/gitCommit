@@ -47,16 +47,9 @@ class ChangeLogManager:
             new_version: Nuova versione da rilasciare
             last_tag: Ultimo tag (opzionale, se non fornito verrà ricavato)
         """
-        # self.git_root = Path(git_root)
         self.git_root = git_root
-        # self.changelog_path = self.git_root / "CHANGELOG.md"
         self.changelog_path = Path(git_root) / "CHANGELOG.md"
-        # self.new_version = new_version
-        # self.last_tag = last_tag
 
-        # Se non abbiamo il tag, proviamo a ricavarlo
-        # if self.last_tag is None:
-            # self.last_tag = self._get_last_tag()
 
 
     def _get_last_tag(self) -> Optional[str]:

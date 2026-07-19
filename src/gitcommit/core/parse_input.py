@@ -25,9 +25,9 @@ def parseInput():
     # action_opt.add_argument("description", metavar='', nargs="?", default=None, type=str, help="Description")
     action_opt.add_argument("--tag", action="store_true")
     action_opt.add_argument("--push", action="store_true")
-    action_opt.add_argument("--changelog", action="store_true", help="Aggiorna CHANGELOG.md")
     action_opt.add_argument("--status", action="store_true", help="Display git status")
     action_opt.add_argument("--scan", action="store_true", help="scan for git repositories in all subforders")
+    action_opt.add_argument("--all", action="store_true", help="process all repositories defined in config file")
     action_opt.add_argument("--ziplib", action="store_true", help="zip pyLnLib to be saved in git")
     # action_opt.add_argument("--root-dir", metavar='', required=False, default=None, type=str, help="root dir from which scan for git repositories.")
 
@@ -67,16 +67,14 @@ def parseInput():
     if args.display_args:
         import json
         json_data = json.dumps(vars(args), indent=4, sort_keys=True)
-        # print(f'\tinput arguments: {json_data}'.format(**locals()))
         print(f'input arguments: {json_data}')
         sys.exit(0)
 
 
 
-    if args.new_branch:
-        command = f'git checkout -b "{args.new_branch}" && git push -u gitHub "{args.new_branch}"'
-        print(command)
-        # run(command, args.go, fVerbose=True)
-        sys.exit(0)
+    elif args.new_branch:
+        sys.exit(f'git checkout -b "{args.new_branch}" && git push -u gitHub "{args.new_branch}"')
+    elif args.del_branch:
+        sys.exit(f'git checkout -b "{args.del_branch}" && git push -u gitHub --delete "{args.del_branch}"')
 
     return args

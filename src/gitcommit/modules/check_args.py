@@ -79,26 +79,3 @@ def version(git_prj: lnDict) ->bool:
 
 
     return set_tag
-
-
-
-# def tag(git_prj: lnDict) -> bool:
-#     if git_prj.tag:
-#         if git_prj.new_tag == git_prj.last_tag:
-#             logger.warning("Stai chiedendo il tag ma non è stato richiesto alcun incremento per la versione.")
-#             logger.warning("L'opzione verrà ignorata!")
-#             args.tag = False
-#         else:
-#             updated = update_pyproject(new_version=version, fExecute=args.go, gitRoot=git_prj.path)
-#             if updated and git_prj.commit:
-#                 cmdList.append("git add pyproject.toml")
-
-#             cmd = f'git tag -a "{new_tag}"'
-#             if fNewVersion: cmd = f'{cmd} -m "Release {version}"'
-#             cmdList.append(cmd)
-
-#         logger.notify("=== RELEASE PLAN ===")
-#         logger.info("Last tag: %s", last_tag)
-#         logger.info("new  tag: %s", new_tag)
-
-#     return False
