@@ -48,6 +48,7 @@ def validate(version):
 def version(git_prj: lnDict) ->bool:
     args=get_project_vars("input_args")
 
+
     if args.version:
         ''' è stato chiesto un upgrade di version... '''
         git_prj.new_version = args.version.lstrip("v")
@@ -56,15 +57,17 @@ def version(git_prj: lnDict) ->bool:
     elif any([args.patch, args.minor, args.major]):
         ''' è stato chiesto un upgrade di version... '''
         level = "patch" if args.patch else "minor" if args.minor else "major"
-        git_prj.new_version = bump(git_prj.last_version, level)
+        git_prj.new_version = bump(git_prj.curr_version, level)
     else:
         ''' la versione rimane invariata'''
-        git_prj.new_version = git_prj.last_version
+        git_prj.new_version = git_prj.curr_version
 
     validate(git_prj.new_version)
+    if not git_prj.update_tag:
+        git_prj.new_version = git_prj.curr_version
 
     # controllo della versione (escludendo il minor version)
-    if git_prj.new_version[:-2] != git_prj.last_version[:-2] or args.tag:
+    if git_prj.new_version[:-2] != git_prj.curr_version[:-2] or args.tag:
         set_tag = True # forziamo  tag
     else:
         set_tag = args.tag
@@ -76,8 +79,9 @@ def version(git_prj: lnDict) ->bool:
         if f"v{git_prj.new_version}" == git_prj.last_tag:
             logger.warning("Stai chiedendo il tag ma è uguale al corrente tag.")
             logger.warning("Dovresti usare --patch, --minor, --major o --version.")
-            logger.warning("L'opzione verrà ignorata!")
-            set_tag = False
+            logger.error("modificare le optioni!")
+            sys.exit(1)
+            # set_tag = False
 
 
     return set_tag

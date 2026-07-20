@@ -13,7 +13,7 @@ wheels = [
 
 [[package]]
 name = "gitcommit"
-version = "0.1.7"
+version = "0.1.8"
 source = { editable = "." }
 dependencies = [
     { name = "pylnlib" },
@@ -75,14 +75,18 @@ wheels = [
 
 [[package]]
 name = "pylnlib"
-version = "0.1.22"
+version = "0.1.23"
 source = { editable = "../pyLnLib" }
 dependencies = [
     { name = "pyyaml" },
+    { name = "tomli-w" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pyyaml", specifier = ">=6.0.2" }]
+requires-dist = [
+    { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "tomli-w", specifier = ">=1.0.0" },
+]
 
 [[package]]
 name = "pytest"
