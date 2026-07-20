@@ -60,14 +60,6 @@ def prepare_cmd_list(project: lnDict, n_prj: int) -> list:
         elif n_prj>1:
             minimal = True
 
-    # if n_prj==1 and project.name == "pyLnLib":
-    #     commit_nr =  ""
-    #     minimal = False
-
-    # elif n_prj==2 and project.name == "pyLnLib":
-    #     commit_nr =  ""
-    #     minimal = True
-
     # progetto della current directory
     elif n_prj==2:
         commit_nr =  f" (pylnlib_commit={pylnlib_commit_nr})"
@@ -100,7 +92,7 @@ def prepare_cmd_list(project: lnDict, n_prj: int) -> list:
 
     if project.set_tag and not minimal:
         cmd_list.append(f"git tag -a v{project.new_version} -m \"Release {project.new_version}\"")
-        if project.push:
+        if project.push or (args.push and project.commit):
             cmd_list.append("git push --tags")
 
     return cmd_list
