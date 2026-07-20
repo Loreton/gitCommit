@@ -205,7 +205,12 @@ def main():
     ### - - pyLnLib comunque compare....
     ### -----------------------------
     for prj_name in projects_name_list[:]:
+        if prj_name not in pv.git_project:
+            logger.error(f"project {prj_name} not found in git_project")
+            logger.notify("please configure it into configuration file.", exit=True)
+
         git_project = pv.git_project[prj_name]
+        print(git_project)
         git_project["name"] = prj_name
 
         if args.all:

@@ -63,7 +63,7 @@ def get_last_tag(git_root: str) -> str|None:
     logger.debug("Recupero ultimo tag dal repository...")
 
     # Esegui git describe
-    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, f_execute=True, stacklevel=0)
+    _rcode, stdout, _stderr = lnRun( 'git describe --tags --abbrev=0', cwd=git_root, f_execute=True, stacklevel=0, exit_on_error=False)
 
     # Comando eseguito con successo e c'è output
     if _rcode == 0 and stdout:
@@ -74,7 +74,7 @@ def get_last_tag(git_root: str) -> str|None:
     # Nessun tag nel repository
     if _rcode != 0 and "No names found" in _stderr:
         logger.debug("Nessun tag trovato nel repository (repository senza tag)")
-        return None
+        return "v0.0.0"
 
     # Altri errori (es. non è un repository git)
     if _rcode != 0:

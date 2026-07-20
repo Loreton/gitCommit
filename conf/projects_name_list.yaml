@@ -16,7 +16,24 @@ main:
         push:  False
         pylnlib_commit_nr:  null
 
+input_args:
+
 git_project:
+
+    pyLnLib:
+        name: pyLnLib
+        path: "${HOME}/filu/Programming/gitREPO/pyLnLib"
+        <<: *flags
+        cmd_list: []
+        python: True
+
+    buildPythonProject:
+        name: buildPythonProject
+        path: "${HOME}/filu/Programming/gitREPO/buildPythonProject"
+        <<: *flags
+        cmd_list: []
+        python: True
+
     gitCommit:
         name: gitCommit
         path: "${HOME}/filu/Programming/gitREPO/gitCommit"
@@ -31,19 +48,19 @@ git_project:
         cmd_list: []
         python: True
 
-    lnEsptool:
-        name: lnEsptool
-        path: "${HOME}/filu/Programming/gitREPO/lnEsptool"
-        <<: *flags
-        cmd_list: []
-        python: False
-
     lnSync:
         name: lnSync
         path: "${HOME}/filu/Programming/gitREPO/lnSync"
         <<: *flags
         cmd_list: []
         python: True
+
+    lnEsptool:
+        name: lnEsptool
+        path: "${HOME}/filu/Programming/gitREPO/lnEsptool"
+        <<: *flags
+        cmd_list: []
+        python: False
 
     pressControl:
         name: pressControl
@@ -128,118 +145,3 @@ git_project:
         <<: *flags
         cmd_list: []
         python: False
-
-    pyLnLib:
-        name: pyLnLib
-        path: "${HOME}/filu/Programming/gitREPO/pyLnLib"
-        <<: *flags
-        cmd_list: []
-        python: True
-
-
-
-# git_projectl:
-#     - name: gitCommit
-#       path: "${HOME}/filu/Programming/gitREPO/gitCommit"
-#       <<: *flags
-#       cmd_list: []
-#       python: True
-
-#     - name: deviceManager
-#       path: "${HOME}/filu/Programming/gitREPO/lnDevices/deviceManager"
-#       <<: *flags
-#       cmd_list: []
-#       python: True
-
-#     - name: lnEsptool
-#       path: "${HOME}/filu/Programming/gitREPO/lnEsptool"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnSync
-#       path: "${HOME}/filu/Programming/gitREPO/lnSync"
-#       <<: *flags
-#       cmd_list: []
-#       python: True
-
-#     - name: pressControl
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/pressControl"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: orto_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/orto_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnTimeSched_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeSched_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnLogger_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnLogger_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnTimeClock_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeClock_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnTelegram_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegram_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnWifiManager_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnWifiManager_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnTelegramSendHttp_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegramSendHttp_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnSerialRead_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnSerialRead_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnMillisTimers_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnMillisTimers_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnButtonManager_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnButtonManager_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: lnCheckPins_esp32
-#       path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnCheckPins_esp32"
-#       <<: *flags
-#       cmd_list: []
-#       python: False
-
-#     - name: pyLnLib
-#       path: "${HOME}/filu/Programming/gitREPO/pyLnLib"
-#       <<: *flags
-#       cmd_list: []
-#       python: True
-
-
-input_args:
