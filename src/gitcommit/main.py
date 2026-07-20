@@ -47,18 +47,33 @@ def prepare_cmd_list(project: lnDict, n_prj: int) -> list:
     pylnlib_commit_nr = check_pyLnLib(pv.git_project["pyLnLib"])
 
     minimal = False
-    if n_prj==1: # solo pyLnLib
-        commit_nr =  ""
-        minimal = False
+    # if n_prj==1: # solo pyLnLib
+    #     commit_nr =  ""
+    #     minimal = False
 
-    elif n_prj==2 and project.name == "pyLnLib":
-        commit_nr =  ""
-        minimal = True
+    if project.name == "pyLnLib":
+        # progetto pyLnLib
+        commit_nr =  "" # non serve mettere il commit_nr di sestesso
+        if n_prj==1:
+            minimal = False
+        # riferimento a pyLnLib per altri progetti
+        elif n_prj>1:
+            minimal = True
 
+    # if n_prj==1 and project.name == "pyLnLib":
+    #     commit_nr =  ""
+    #     minimal = False
+
+    # elif n_prj==2 and project.name == "pyLnLib":
+    #     commit_nr =  ""
+    #     minimal = True
+
+    # progetto della current directory
     elif n_prj==2:
         commit_nr =  f" (pylnlib_commit={pylnlib_commit_nr})"
         minimal = False
 
+    # progetti con parametro --all
     else:
         commit_nr =  f" (pylnlib_commit={pylnlib_commit_nr})"
         minimal = True
