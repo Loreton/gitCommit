@@ -4,6 +4,7 @@
 # Date .........: 17-07-2026 14.04.01
 #
 
+from logging import warning
 import sys
 from webbrowser import get; sys.dont_write_bytecode = True
 import re
@@ -12,7 +13,7 @@ import re
 from pyLnLib           import  get_logger, get_project_vars, lnDict
 
 # from .get_last_tag     import  get_last_tag
-from gitcommit.files.changelog       import  generate_changelog
+# from gitcommit.files.changelog       import  generate_changelog
 # from .update_library   import  update_library
 # from .update_pyproject import  update_pyproject
 # from .git_commands import git_status
@@ -69,11 +70,12 @@ def version(git_prj: lnDict) ->bool:
         set_tag = args.tag
 
     if set_tag:
-        logger.notify("=== RELEASE PLAN ===")
+        logger.notify("=== RELEASE TAG ===")
         logger.info("Last tag: %s", git_prj.last_tag)
         logger.info("new  tag: v%s", git_prj.new_version)
         if f"v{git_prj.new_version}" == git_prj.last_tag:
             logger.warning("Stai chiedendo il tag ma è uguale al corrente tag.")
+            logger.warning("Dovresti usare --patch, --minor, --major o --version.")
             logger.warning("L'opzione verrà ignorata!")
             set_tag = False
 

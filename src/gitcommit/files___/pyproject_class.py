@@ -130,23 +130,10 @@ class PyProjectManager:
 
         # Log delle informazioni
         logger.info(f"Versione corrente: {cur_version}")
-        logger.info(f"Nuova versione: {new_version}")
+        logger.info(f"Nuova versione:    {new_version}")
 
         # Scrivi il file se richiesto
         return self.write(f_execute)
-
-    # def update_version(self, new_version: str, f_execute: bool = True) -> bool:
-    #     """
-    #     Metodo alias per set_version per mantenere compatibilità con il codice esistente
-
-    #     Args:
-    #         new_version: Nuova versione da impostare
-    #         f_execute: Se True esegue la scrittura, altrimenti dry-run
-
-    #     Returns:
-    #         bool: True se l'operazione è riuscita, False altrimenti
-    #     """
-    #     return self.set_version(new_version, f_execute)
 
     @property
     def data(self) -> dict:

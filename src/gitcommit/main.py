@@ -19,6 +19,8 @@ from     pyLnLib.system    import lnRun
 from     pyLnLib            import keyboardPrompt
 from     pyLnLib.files     import zipDir, get_yaml_engine
 from     pyLnLib.lndict     import lnDict
+from pyLnLib.git.pyproject_class import PyProjectManager
+from pyLnLib.git.changelog_class import ChangeLogManager
 
 C=get_colors()
 pv: lnDict=get_project_vars()
@@ -26,8 +28,6 @@ logger=get_logger()
 
 from gitcommit.core import parseInput, helpCommands
 from gitcommit.modules.git_commands import get_git_root, git_status, get_last_tag
-from gitcommit.files.pyproject_class import PyProjectManager
-from gitcommit.files.changelog import ChangeLogManager
 from gitcommit.modules import check_args
 
 
@@ -53,7 +53,7 @@ def prepare_cmd_list(project: lnDict) -> list:
 
     if not project.minimal:
         if project.set_tag:
-            cmd_list.append(f"git tag -a v{project.new_version} -m Release {project.new_version}")
+            cmd_list.append(f"git tag -a v{project.new_version} -m \"Release {project.new_version}\"")
             if project.push:
                 cmd_list.append("git push --tags")
 
@@ -73,8 +73,6 @@ def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
 #
 #===================================================
 def process_python_git_repo(project: lnDict) -> None:
-    # logger.info("\n\n\t\t=== Processing python git repo: %s ===", project.path, color=C.whiteH)
-    # logger.info("\n\n")
     logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
     project.commit, project.push = git_status(git_root=project.path, logger_level="info")
     project.last_tag = get_last_tag(git_root=project.path)
