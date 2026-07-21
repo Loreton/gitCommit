@@ -4,15 +4,10 @@
 # Date .........: 17-07-2026 19.53.19
 #
 
-# from inspect import stack
-from fcntl import F_ADD_SEALS
 import sys
-# from webbrowser import get; sys.dont_write_bytecode = True
 import os
 from pathlib import Path
 from datetime import datetime
-from turtle import update
-# from timeit import default_timer
 
      ### - project modules
 # from gitcommit.files.changelog import generate_changelog

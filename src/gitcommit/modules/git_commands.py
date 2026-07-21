@@ -97,8 +97,7 @@ def git_status(git_root: str, logger_level: str="warning")->tuple[bool, bool]:
     commit = True
     push = False
 
-    for line in stdout.splitlines():
-        logger.info(line, color=C.blue)
+    logger.info("git status output:\n%s", stdout, trim_line=True)
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:
