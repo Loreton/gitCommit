@@ -77,7 +77,7 @@ def prepare_cmd_list(project: lnDict) -> list:
     return cmd_list
 
 #===================================================
-#
+# get last commit
 #===================================================
 def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
     rcode, stdout, stderr = lnRun("git log -1 --oneline", f_execute=True, cwd=project.path, stacklevel=0)
