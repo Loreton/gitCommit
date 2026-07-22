@@ -44,6 +44,13 @@ git_project:
         cmd_list: []
         python: True
 
+    eBooks:
+        name: eBooks
+        path: "${HOME}/filu/Programming/gitREPO/eBooks"
+        <<: *flags
+        cmd_list: []
+        python: True
+
     deviceManager:
         name: deviceManager
         path: "${HOME}/filu/Programming/gitREPO/lnDevices/deviceManager"

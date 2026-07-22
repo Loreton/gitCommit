@@ -39,7 +39,7 @@ def prepare_cmd_list(project: lnDict) -> list:
     args=get_project_vars("input_args")
 
     now = datetime.now().strftime("%Y.%m.%d")
-    default_description: str=f"update on {now}" ### force
+    default_description: str= args.description  or f"update on {now}" ### force
 
 
     pylnlib_commit_nr = check_pyLnLib(pv.git_project["pyLnLib"])
@@ -144,8 +144,8 @@ def main():
         print(os.environ.get("ZED_TERM"))
         print(os.environ.get("TERM_PROGRAM"))
 
-    ctx.pyproject = PyProjectManager(Path.cwd())
-    ctx.version = ctx.pyproject.get_version()
+    pyproject = PyProjectManager(Path.cwd())
+    ctx.version = pyproject.get_version()
     ctx.set_project_name(f"gitCommit-{ctx.version}")
 
     #### 1. logger initializzation
