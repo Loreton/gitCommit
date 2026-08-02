@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 17-07-2026 14.04.01
+# ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
 from logging import warning
@@ -10,15 +10,11 @@ from webbrowser import get; sys.dont_write_bytecode = True
 import re
 
 ### - project modules
-from pyLnLib           import  get_logger, get_project_vars, lnDict
+from pyLnLib.logger           import get_logger
+from pyLnLib.context   import ctx, lnContext
 
-# from .get_last_tag     import  get_last_tag
-# from gitcommit.files.changelog       import  generate_changelog
-# from .update_library   import  update_library
-# from .update_pyproject import  update_pyproject
-# from .git_commands import git_status
 logger=get_logger()
-pvars=get_project_vars()
+# pvars=get_project_vars()
 
 
 
@@ -46,7 +42,8 @@ def validate(version):
 # return tag flag
 ###################################################
 def version(git_prj: lnDict) ->bool:
-    args=get_project_vars("input_args")
+    args=ctx.input_args
+
 
 
     if args.version:

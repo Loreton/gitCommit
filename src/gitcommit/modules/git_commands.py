@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 #
-# updated by ...: Loreto Notarantonio
-# Date .........: 19-07-2026 11.09.35
+# ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
 # import sys
 # sys.dont_write_bytecode = True
 import os
-from termios import PARODD
-from turtle import pd
 
 ### - project modules
 from pyLnLib import  lnRun
 from pyLnLib import  get_logger, get_colors
-from pyLnLib.logger.ln_colored_logger import StackLevel
+
 logger=get_logger()
 C = get_colors()
 

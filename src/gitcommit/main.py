@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 17-07-2026 19.53.19
+# ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
+from logging import getLevelName
 import sys
 import os
 from pathlib import Path
@@ -11,24 +12,23 @@ from datetime import datetime
 
      ### - project modules
 # from gitcommit.files.changelog import generate_changelog
-from     pyLnLib.context   import ctx, get_project_vars
-from     pyLnLib.colors    import get_colors
-from     pyLnLib.logger    import get_logger, init_logger
-from     pyLnLib.system    import lnRun
-from     pyLnLib            import keyboardPrompt
-from     pyLnLib.files     import zipDir, get_yaml_engine
-from     pyLnLib.lndict     import lnDict
+from pyLnLib.logger    import get_logger
+from pyLnLib.context   import ctx, lnContext
+from pyLnLib.colors    import get_colors
+from pyLnLib.system    import lnRun
+from pyLnLib            import keyboardPrompt
+from pyLnLib.files     import zipDir, get_yaml_engine
+from pyLnLib.lndict     import lnDict
 from pyLnLib.git.pyproject_class import PyProjectManager
 from pyLnLib.git.changelog_class import ChangeLogManager
 
-C=get_colors()
-pv: lnDict=get_project_vars()
-logger=get_logger()
 
 from gitcommit.core import parseInput, helpCommands
 from gitcommit.modules.git_commands import get_git_root, git_status, get_last_tag
 from gitcommit.modules import check_args
 
+logger=get_logger()
+C=get_colors()
 
 
 
@@ -36,7 +36,8 @@ from gitcommit.modules import check_args
 #
 #===================================================
 def prepare_cmd_list(project: lnDict) -> list:
-    args=get_project_vars("input_args")
+    args=ctx.input_args
+    pv=ctx.config
 
     now = datetime.now().strftime("%Y.%m.%d")
     default_description: str= args.description  or f"update on {now}" ### force
@@ -46,11 +47,13 @@ def prepare_cmd_list(project: lnDict) -> list:
     commit_nr =  f" (pylnlib_commit={pylnlib_commit_nr})"
     # if project.update_complete:
 
+    commit_descr: str= f"{default_description} - (Release {project.new_version}){commit_nr}"
 
     if project.name == "pyLnLib":
         commit_nr =  "" # non serve mettere il commit_nr di sestesso
+        if not project.lnlib_complete:
+            commit_descr = f"update on {now} (regarding project: {args.project})"
 
-    commit_descr: str= f"{default_description} - (Release {project.new_version}){commit_nr}"
     cmd_list: list[str] = []
 
 
@@ -133,47 +136,46 @@ def process_python_git_repo(project: lnDict) -> None:
 
 
 
+def initialize_program() -> lnContext:
+    # 1. initialize context
+    pyproject = PyProjectManager(Path.cwd())
+    appl_version = pyproject.get_version()
+    ctx.initialize(project_name="eBooks", project_temp_dir=f"/tmp/ebooks-{appl_version}", version=appl_version)
+
+
+    #### 3. read  project configuration file
+    config_file = ctx.project_config_dir / "projects_name_list.yaml"
+    yaml_engine=get_yaml_engine(search_paths=[ctx.project_config_dir], recursive=True)
+    config_data: lnDict = lnDict(yaml_engine.load(str(config_file)))
+    config_data.save_yaml(title="processed_config", filepath=ctx.project_log_dir / "ebooks_config.yaml")
+    #### 4. insert configuration data into context
+    ctx.config.update(config_data)
+    return ctx
 
 #################################################################
 #  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -
 #################################################################
+
 def main():
-    if 'debugpy' in sys.modules:
-        print(os.environ.get("ZED_APP_PATH"))
-        print(os.environ.get("ZED_ENVIRONMENT"))
-        print(os.environ.get("ZED_TERM"))
-        print(os.environ.get("TERM_PROGRAM"))
-
-    pyproject = PyProjectManager(Path.cwd())
-    ctx.version = pyproject.get_version()
-    ctx.set_project_name(f"gitCommit-{ctx.version}")
-
-    #### 1. logger initializzation
-    logger=init_logger(logger_name=f"gitCommit-{ctx.version}", test=False)
-
-    #### 2. read static project_list file
-    yaml_engine=get_yaml_engine(search_paths=[ctx.get_conf_dir()], recursive=True)
-    config_file = ctx.get_conf_dir() / "projects_name_list.yaml"
-    config_data: lnDict = lnDict(yaml_engine.load(str(config_file)))
-
-    #### 3. initialize project variables (pv)
-    pv.update(config_data)
-
-    #### 4. processo input arguments....
-    args = parseInput()
-    pv["input_args"]=vars(args) # include args in project_vars
-    pv.save_yaml(filepath=ctx.get_log_dir() / "project_vars.yaml", title="project_vars", indent=4)
-
-    # -----------------------------------------
+    initialize_program()
+    args=parseInput()
     # - update logger as requested by input arguments
+    ctx.input_args.update(vars(args)) # include args in project_vars
+
+    #### 2. logger initializzation
+    logger.initialize(name=f"gitCommit-{ctx.version}", logging_dir=ctx.project_log_dir, console_logger_level=args.console_log_level)
+
+
     # -----------------------------------------
-    logger.setShowCaller(show_caller=args.log_show_caller)
+    # -----------------------------------------
+    lnDict(ctx.to_dict()).save_yaml(filepath=ctx.project_log_dir / "project_vars.yaml", title="project_vars", indent=4)
+
 
     # -----------------------------------------
     # - print project variables if requested
     # -----------------------------------------
     if args.vars:
-        print(pv)
+        print(ctx.to_dict())
         sys.exit(0)
 
     # -----------------------------------------
@@ -186,7 +188,7 @@ def main():
 
 
     # -----------------------------------------
-    # - get current project git_dir
+    # - get current project git_dir (risale alla root del git)
     # -----------------------------------------
     this_git_dir = Path(get_git_root(os.path.curdir))
 
@@ -206,29 +208,26 @@ def main():
     ### -----------------------------
     projects_name_list: list[str] = [] # lista dei nomi dei progetti da processare
 
+    git_project_name=args.project
 
-    if this_git_dir.name == 'pyLnLib' and not args.all:
-        projects_name_list = ['pyLnLib']
-        lnlib_full_update=True
-        # projects_minimal=False
-        project_full_update=True # deve includere tags, CHANGELOG.md, pyproject.toml
-        # tags_chlog_pyproject = True deve includere tags, CHANGELOG.md, pyproject.toml
 
-    elif args.all:
-        projects_name_list = list(pv.git_project.keys()) # leggili dalla configurazione
+    if args.project == 'all':
+        args.all = True
+        projects_name_list = list(ctx.config.git_project.keys()) # leggili dalla configurazione
         projects_name_list.remove("pyLnLib") # rimuovi temporaneamente pyLnLib
         projects_name_list.insert(0, 'pyLnLib') # inseriscila per prima in modo da poter catturare il commit_nr
         lnlib_full_update =False
-        # projects_minimal=True
         project_full_update=False
-        # tags_chlog_pyproject = False
+
+    elif args.project == 'pyLnLib':
+        projects_name_list = ['pyLnLib']
+        lnlib_full_update=True
+        project_full_update=True # deve includere tags, CHANGELOG.md, pyproject.toml
 
     else:
         projects_name_list = ['pyLnLib', this_git_dir.name]
         lnlib_full_update =False
-        # projects_minimal=False
         project_full_update=True
-        # tags_chlog_pyproject = True
 
 
 
@@ -240,12 +239,11 @@ def main():
     ### - - pyLnLib comunque compare....
     ### -----------------------------
     for prj_name in projects_name_list[:]:
-        if prj_name not in pv.git_project:
+        if prj_name not in ctx.config.git_project:
             logger.error(f"project {prj_name} not found in git_project")
             logger.notify("please configure it into configuration file.", exit=True)
 
-        project = pv.git_project[prj_name]
-
+        project = ctx.config.git_project[prj_name]
 
         if project.name == "pyLnLib":
             project.lnlib_complete = lnlib_full_update
