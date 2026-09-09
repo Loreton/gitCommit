@@ -11,7 +11,7 @@ import re
 
 ### - project modules
 from pyLnLib.logger           import get_logger
-from pyLnLib.context   import ctx, lnContext
+from pyLnLib.context   import pVars as pv
 
 logger=get_logger()
 # pvars=get_project_vars()
@@ -42,7 +42,7 @@ def validate(version):
 # return tag flag
 ###################################################
 def version(git_prj: lnDict) ->bool:
-    args=ctx.input_args
+    args=pv.args
 
 
 

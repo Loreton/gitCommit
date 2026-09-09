@@ -51,7 +51,7 @@ wheels = [
 
 [[package]]
 name = "gitcommit"
-version = "0.1.14"
+version = "0.1.15"
 source = { editable = "." }
 dependencies = [
     { name = "pylnlib" },
@@ -157,7 +157,7 @@ wheels = [
 
 [[package]]
 name = "pylnlib"
-version = "0.1.33"
+version = "0.1.47"
 source = { editable = "../pyLnLib" }
 dependencies = [
     { name = "bs4" },

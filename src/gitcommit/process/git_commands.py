@@ -86,15 +86,13 @@ def get_last_tag(git_root: str) -> str|None:
 #   True:  something to commit
 #   False: nothing to commit
 ######################################################
-def git_status(git_root: str, logger_level: str="warning")->tuple[bool, bool]:
-    saved_logger_level = logger.getConsoleLoggerLevel()
-    logger.setConsoleLoggerLevel(logger_level)
+def git_status(git_root: str, force_log: bool=False)->tuple[bool, bool]:
 
     _rcode, stdout = _runGitCommand("git status", cwd=git_root, fExecute=True)
     commit = True
     push = False
 
-    logger.info("git status output:\n%s", stdout, trim_line=True)
+    logger.info("git status output:\n%s", stdout, trim_line=True, force_log=force_log)
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:
@@ -114,5 +112,4 @@ def git_status(git_root: str, logger_level: str="warning")->tuple[bool, bool]:
     else:
         logger.debug("no commit necessary!")
 
-    logger.setConsoleLoggerLevel(saved_logger_level)
     return commit, push

@@ -51,8 +51,8 @@ def parseInput():
 
     def git_commands(parser):
         commands=parser.add_argument_group(f'{C.white} --------- git commands{C.reset}')
-        commands.add_argument("--new-branch",  metavar='', default=None, type=str, help="Branch name")
-        commands.add_argument("--del-branch", action="store_true", help="""BR='old_branch' && git branch -d ${BR} && git push gitHub --delete ${BR}""")
+        commands.add_argument("--new-branch",  metavar='', default=None, type=str, help="""BR='new_branch' && git branch -b ${BR} && git push gitHub -u ${BR}""")
+        commands.add_argument("--del-branch", action="store_true", help="""BR='old_branch' && git branch --delete ${BR} && git push gitHub --delete ${BR}""")
         commands.add_argument("--list-commands", action="store_true", help="list of some useful commands.")
 
     def version_flags(parser):

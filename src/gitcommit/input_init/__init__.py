@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 #
 # updated by ...: Loreto Notarantonio
-# Date .........: 17-07-2026 12.30.26
+# ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
 
 from .parse_input           import parseInput
 from .help_commands         import helpCommands
+from .initialize_program    import initialize_program
 
 __all__ = [
-    'parseInput',
     'helpCommands',
+    'parseInput',
+    'initialize_program',
 ]

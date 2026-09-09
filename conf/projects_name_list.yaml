@@ -155,3 +155,10 @@ git_project:
         <<: *flags
         cmd_list: []
         python: False
+
+    lnEnv:
+        name: lnEnv
+        path: "${HOME}/filu/lnEnv"
+        <<: *flags
+        cmd_list: []
+        python: False
