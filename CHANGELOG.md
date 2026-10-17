@@ -1,3 +1,13 @@
+## [0.1.19] - 2026-10-17
+
+## Other
+
+- test commit - (Release 0.1.18) (pylnlib_commit=59a6591)
+- modifiche per inserire il commit di un progetto NON python - (Release 0.1.17) (pylnlib_commit=59a6591)
+- adeguamento alla nuova versione di pyLnLib - (Release 0.1.16) (pylnlib_commit=5003945)
+- allineamenti con la nuova context.py ed inserimento parametro --project - (Release 0.1.15) (pylnlib_commit=78be59d)
+
+
 ## [0.1.15] - 2026-08-02
 
 ## Other

@@ -59,13 +59,15 @@ def prepare_cmd_list(project: lnDict) -> list:
     if project.commit:
         cmd_list.append("git add .")
 
-        if not project.just_commit: 
+        cmd_list.append(f"git commit -m \"{commit_descr}\"")
+
+        # va dopo il commit altrimenti non lo vede per aggiornare il CHANGELOG.md
+        if not project.just_commit:
             cmd_list.append("git add CHANGELOG.md")
 
         if project.python and not project.just_commit:
             cmd_list.append("git add pyproject.toml")
 
-        cmd_list.append(f"git commit -m \"{commit_descr}\"")
 
     if project.set_tag:
         cmd_list.append(f"git tag -a v{project.new_version} -m \"Release {project.new_version}\"")
@@ -98,7 +100,7 @@ def process_git_repo(project: lnDict) -> None:
     project.last_tag = get_last_tag(git_root=project.path)
     project.curr_version = project.last_tag.lstrip('v') # type: ignore # skip 'v'
 
-    if not project.just_commit: 
+    if not project.just_commit:
         if check_version(git_prj=project): ### if project.set_tag:
             logger.notify("=== RELEASE TAG ===")
             logger.info("last tag: %s", project.last_tag)
@@ -107,6 +109,7 @@ def process_git_repo(project: lnDict) -> None:
             if project.python:
                 project.pyproject.update_version(project.new_version, f_execute=False)
 
+            # manager = ChangeLogManager(git_root=project.path,new_version=project.new_version,last_tag=getattr(git_prj, "last_tag", None))
             project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=False) # Preview (dry-run)
             logger.info(f"Riepilogo commit: {project.chLogManager.get_summary()}")
 
@@ -122,8 +125,12 @@ def process_git_repo(project: lnDict) -> None:
             '''devo di nuovo processare, prima di procedere,
                 perché alcuni file devono essere  modificati
                 (CHANGELOG.MD o pyproject.toml, o altri)'''
-            # if project.update_changelog:
-            project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
+
+            if not project.just_commit:
+                project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
+
+            if project.python and not project.just_commit:
+                 project.pyproject.update_version(project.new_version, f_execute=True)
 
             for cmd in cmd_list:
                 lnRun(command=cmd, cwd=project.path, f_execute=True)
