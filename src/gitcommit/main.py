@@ -62,8 +62,8 @@ def prepare_cmd_list(project: lnDict) -> list:
         cmd_list.append(f"git commit -m \"{commit_descr}\"")
 
         # va dopo il commit altrimenti non lo vede per aggiornare il CHANGELOG.md
-        if not project.just_commit:
-            cmd_list.append("git add CHANGELOG.md")
+        # if not project.just_commit:
+        #     cmd_list.append("git add CHANGELOG.md")
 
         if project.python and not project.just_commit:
             cmd_list.append("git add pyproject.toml")
@@ -110,8 +110,9 @@ def process_git_repo(project: lnDict) -> None:
                 project.pyproject.update_version(project.new_version, f_execute=False)
 
             # manager = ChangeLogManager(git_root=project.path,new_version=project.new_version,last_tag=getattr(git_prj, "last_tag", None))
-            project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=False) # Preview (dry-run)
-            logger.info(f"Riepilogo commit: {project.chLogManager.get_summary()}")
+            # project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=False) # Preview (dry-run)
+            # project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
+            # logger.info(f"Riepilogo commit: {project.chLogManager.get_summary()}")
 
     logger.debug(f"{C.white}{project.name}:{C.info} {str(project)}")
 
@@ -124,10 +125,11 @@ def process_git_repo(project: lnDict) -> None:
         if choice[0] == "--go":
             '''devo di nuovo processare, prima di procedere,
                 perché alcuni file devono essere  modificati
-                (CHANGELOG.MD o pyproject.toml, o altri)'''
+                (pyproject.toml, o altri)'''
 
-            if not project.just_commit:
-                project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
+            # if not project.just_commit:
+                # project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
+                # project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
 
             if project.python and not project.just_commit:
                  project.pyproject.update_version(project.new_version, f_execute=True)
@@ -217,7 +219,7 @@ def main():
             project.just_commit=True
 
         # --- prepara changeLog class object
-        project.chLogManager = ChangeLogManager(git_root=project.path)
+        # project.chLogManager = ChangeLogManager(git_root=project.path)
 
         if project.python:
             # --- prepara pyProject class object per pyproject.toml
