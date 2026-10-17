@@ -13,7 +13,7 @@
             "type": "debugpy",
             // "type": "python",
             "request": "launch",
-            "stopOnEntry": true,
+            "stopOnEntry": false,
             "program": "src/gitcommit/main.py", // non funziona su zip program
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

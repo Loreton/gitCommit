@@ -12,6 +12,7 @@ import re
 ### - project modules
 from pyLnLib.logger           import get_logger
 from pyLnLib.context   import pVars as pv
+from pyLnLib.lndict   import lnDict
 
 logger=get_logger()
 # pvars=get_project_vars()
@@ -42,14 +43,14 @@ def validate(version):
 # return tag flag
 ###################################################
 def version(git_prj: lnDict) ->bool:
+    """ cerca di individuare la versione per il nuovo commit/push
+
+    """
     args=pv.args
 
-
-
     if args.version:
-        ''' è stato chiesto un upgrade di version... '''
+        ''' è stato chiesto una version ben precisa... '''
         git_prj.new_version = args.version.lstrip("v")
-        # fNewVersion = True
 
     elif any([args.patch, args.minor, args.major]):
         ''' è stato chiesto un upgrade di version... '''
@@ -82,3 +83,37 @@ def version(git_prj: lnDict) ->bool:
 
 
     return set_tag
+
+###################################################
+# return tag flag
+###################################################
+def check_version(git_prj: lnDict) ->bool:
+    """ cerca di individuare la versione per il nuovo commit/push
+    confronta unvenutale richiesta di nuova versione con l'ultimo tag impostato in git
+    version sarà in formato ver.mod.path
+    tag sarà version preceduto da v
+
+    return: True se bisogna impostare il tag
+    """
+    args=pv.args
+    git_prj.set_tag = False # forziamo NO tag di default
+
+    if args.version:
+        ''' è stato chiesto una version ben precisa... '''
+        git_prj.new_version = args.version.lstrip("v")
+
+    elif any([args.patch, args.minor, args.major]):
+        ''' è stato chiesto un upgrade di version... '''
+        level = "patch" if args.patch else "minor" if args.minor else "major"
+        git_prj.new_version = bump(git_prj.curr_version, level)
+    else:
+        ''' la versione rimane invariata'''
+        git_prj.new_version = git_prj.curr_version
+
+
+    validate(git_prj.new_version)
+
+    if git_prj.new_version > git_prj.curr_version:
+        git_prj.set_tag = True # forziamo  tag
+
+    return git_prj.set_tag

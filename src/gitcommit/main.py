@@ -28,6 +28,7 @@ from gitcommit import parseInput, helpCommands
 from gitcommit import get_git_root, git_status, get_last_tag
 from gitcommit import version
 from gitcommit import initialize_program
+from gitcommit.process.check_args import check_version
 
 logger=get_logger()
 C=get_colors()
@@ -135,6 +136,46 @@ def process_python_git_repo(project: lnDict) -> None:
         logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
     # print("\n\n")
 
+#===================================================
+#
+#===================================================
+def process_git_repo(project: lnDict) -> None:
+    logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
+    project.commit, project.push = git_status(git_root=project.path, force_log=True)
+    project.last_tag = get_last_tag(git_root=project.path)
+    # breakpoint()
+    project.curr_version = project.last_tag[1:] # skip 'v'
+
+    if check_version(git_prj=project): ### if project.set_tag:
+        logger.notify("=== RELEASE TAG ===")
+        logger.info("last tag: %s", project.last_tag)
+        logger.info("new  tag: v%s", project.new_version)
+
+        if project.update_changelog:
+            project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=False) # Preview (dry-run)
+        logger.info(f"Riepilogo commit: {project.chLogManager.get_summary()}")
+
+    logger.debug(f"{C.white}{project.name}:{C.info} {str(project)}")
+
+    cmd_list: list = prepare_cmd_list(project=project)
+    if cmd_list:
+        logger.notify(f"=== Command list for {project.name} ===")
+        for cmd in cmd_list:
+            logger.info(f"{cmd}")
+        choice=keyboardPrompt(text_msg=f"{C.white}[{project.name}] {C.yellow}enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
+        if choice[0] == "--go":
+            '''devo di nuovo processare, prima di procedere,
+                perché alcuni file devono essere  modificati
+                (CHANGELOG.MD o pyproject.toml, o altri)'''
+            if project.update_changelog:
+                project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
+
+            for cmd in cmd_list:
+                lnRun(command=cmd, cwd=project.path, f_execute=True)
+    else:
+        logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
+    # print("\n\n")
+
 
 
 
@@ -144,7 +185,7 @@ def process_python_git_repo(project: lnDict) -> None:
 
 def main():
     ctx = initialize_program(resolve_dict_cross_references=False)
-
+    os.chdir('/home/loreto/filu/lnEnv')
     # -----------------------------------------
     # - print project variables if requested
     # -----------------------------------------
@@ -156,17 +197,6 @@ def main():
 
 
     """ start gitCommit program """
-    # - update logger as requested by input arguments
-    # ctx.input_args.update(vars(args)) # include args in project_vars
-
-    #### 2. logger initializzation
-    # logger.initialize(name=f"gitCommit-{ctx.version}", logging_dir=ctx.project_log_dir, console_logger_level=args.console_log_level)
-
-
-    # -----------------------------------------
-    # -----------------------------------------
-    # lnDict(ctx.to_dict()).save_yaml(filepath=ctx.project_log_dir / "project_vars.yaml", title="project_vars", indent=4)
-
 
     # -----------------------------------------
     # - list commands if requested
@@ -197,9 +227,7 @@ def main():
     ### - crea una list per contenere i nomi dei progetti da processare
     ### -----------------------------
     projects_name_list: list[str] = [] # lista dei nomi dei progetti da processare
-
-    git_project_name=pv.args.project
-
+    project_config=pv.config.git_project.get(this_git_dir.name)
 
     if pv.args.project == 'all':
         pv.args.all = True
@@ -214,10 +242,15 @@ def main():
         lnlib_full_update=True
         project_full_update=True # deve includere tags, CHANGELOG.md, pyproject.toml
 
+
     else:
-        projects_name_list = ['pyLnLib', this_git_dir.name]
-        lnlib_full_update =False
+        if project_config.python:
+            projects_name_list = ['pyLnLib', this_git_dir.name]
+        else:
+            projects_name_list = [this_git_dir.name]
+        lnlib_full_update = False
         project_full_update=True
+
 
 
 
@@ -234,27 +267,36 @@ def main():
             logger.notify("please configure it into configuration file.", exit=True)
 
         project = pv.config.git_project[prj_name]
+        # --- prepara changeLog class object
+        project.chLogManager = ChangeLogManager(git_root=project.path)
 
-        if project.name == "pyLnLib":
-            project.lnlib_complete = lnlib_full_update
-            project.update_changelog = lnlib_full_update
-            project.update_pyproject = lnlib_full_update
-            project.update_tag = lnlib_full_update
-            project.update_complete = lnlib_full_update
-        else:
-            project.lnlib_complete = lnlib_full_update
-            project.update_changelog = project_full_update
-            project.update_pyproject = project_full_update
-            project.update_tag = project_full_update
-            project.update_complete = project_full_update
-
-
-        project.chLogManager = ChangeLogManager(git_root=project.path) # prepara changeLog object
         if project.python:
-            project.pyproject = PyProjectManager(git_root=project.path) # prepara pyProject object
+            if project.name == "pyLnLib":
+                project.lnlib_complete = lnlib_full_update
+                project.update_changelog = lnlib_full_update
+                project.update_pyproject = lnlib_full_update
+                project.update_tag = lnlib_full_update
+                project.update_complete = lnlib_full_update
+            else:
+                project.lnlib_complete = lnlib_full_update
+                project.update_changelog = project_full_update
+                project.update_pyproject = project_full_update
+                project.update_tag = project_full_update
+                project.update_complete = project_full_update
+
+            # --- prepara pyProject class object
+            project.pyproject = PyProjectManager(git_root=project.path)
             print("\n\n")
             process_python_git_repo(project)
 
+        else:
+            # project.lnlib_complete = False
+            project.update_changelog = True
+            # project.update_pyproject = False
+            # project.update_tag = True
+            project.update_complete = True
+            process_git_repo(project)
+            # raise NotImplementedError(f"no python projects has been implemented... ")
 
 
 
