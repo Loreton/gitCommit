@@ -4,6 +4,9 @@ main:
     ln_repo_dir: "$ln_GIT_REPO_DIR"
 
     git_default_flags: &flags
+        main_dir_name: "no_name"
+        just_commit: False
+        name: "no_name"
         description: null
         set_tag:       False
         last_tag:       null
@@ -15,9 +18,7 @@ main:
         commit:  False
         push:  False
         pylnlib_commit_nr:  null
-        update_tag: False
-        update_changelog: False
-        update_pyproject: False
+        pylnlib_full_update: False
 
 input_args:
 

@@ -20,6 +20,8 @@
             "justMyCode": true,
             "args":[
                 "test commit",
+                "--patch",
+                "--push",               
             ],
            // "env": {
            //     "PYTHONPATH": "${workspaceFolder}/Source:${workspaceFolder}/Source/lnLib_lnk"
