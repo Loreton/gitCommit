@@ -131,16 +131,16 @@ def process_git_repo(project: lnDict) -> None:
                 (pyproject.toml, o altri)'''
 
             # if not project.just_commit:
+            project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
                 # project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
                 # project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
             if project.python and not project.just_commit:
                  project.pyproject.update_version(project.new_version, f_execute=True)
 
+            breakpoint()
             for cmd in cmd_list:
                 lnRun(command=cmd, cwd=project.path, f_execute=True)
-            breakpoint()
             # devo farlo qui perché deve valutare dopo aver messo il tag
-            project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
     else:
         logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
     # print("\n\n")
