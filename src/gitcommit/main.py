@@ -130,12 +130,14 @@ def process_git_repo(project: lnDict) -> None:
             # if not project.just_commit:
                 # project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
                 # project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
-
+            breakpoint()
+            project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
             if project.python and not project.just_commit:
                  project.pyproject.update_version(project.new_version, f_execute=True)
 
             for cmd in cmd_list:
                 lnRun(command=cmd, cwd=project.path, f_execute=True)
+            project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
     else:
         logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
     # print("\n\n")
@@ -219,7 +221,7 @@ def main():
             project.just_commit=True
 
         # --- prepara changeLog class object
-        # project.chLogManager = ChangeLogManager(git_root=project.path)
+        project.chLogManager = ChangeLogManager(git_root=project.path)
 
         if project.python:
             # --- prepara pyProject class object per pyproject.toml
