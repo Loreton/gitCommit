@@ -1,3 +1,9 @@
+## [0.1.24] - 2026-10-18
+
+## Other
+
+- test#4 per aggiungere di nuovo CHANGELOG.md - (Release 0.1.23) (pylnlib_commit=db5ca18)
+
 ## [0.1.22] - 2026-10-18
 
 ## Other
