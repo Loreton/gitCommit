@@ -55,7 +55,6 @@ def prepare_cmd_list(project: lnDict) -> list:
 
     cmd_list: list[str] = []
 
-
     if project.commit:
         cmd_list.append("git add .")
 
@@ -71,10 +70,10 @@ def prepare_cmd_list(project: lnDict) -> list:
 
     if project.set_tag:
         cmd_list.append(f"git tag -a v{project.new_version} -m \"Release {project.new_version}\"")
-        if project.push or pv.args.push:
+        if pv.args.push:
             cmd_list.append("git push --tags")
 
-    elif project.push or (pv.args.push and project.commit):
+    if pv.args.push:
         cmd_list.append("git push")
 
 
@@ -97,6 +96,8 @@ def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
 def process_git_repo(project: lnDict) -> None:
     logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
     project.commit, project.push = git_status(git_root=project.path, force_log=True)
+    if project.push:
+        logger.notify("some commits are pendig to be pushed!!!")
     project.last_tag = get_last_tag(git_root=project.path)
     project.curr_version = project.last_tag.lstrip('v') # type: ignore # skip 'v'
 
