@@ -29,6 +29,8 @@ def helpCommands():
 
         {C.blue}--- TAGs{C.green}
         git tag -a "D2026-02-28T16.41" -m "Tag note"
+        git tag -d v1.0.0                # rimuovere il TAG locale
+        git push origin --delete v1.0.0   # rimuovere il TAG  remoto
 
 
         {C.blue}--- clone specific tag {C.green}
@@ -51,10 +53,16 @@ def helpCommands():
 
         {C.blue}--- MOVE branch (changes to a new one){C.green}
         BR='newBranch' && git checkout -b ${varBR} && git add --all && git commit -a -m 'starting new branch'
+
         {C.blue}--- return to previos BRANCH (se necessario{C.green}
         BR='prevBranch' && git checkout ${varBR} && git restore . && git clean -fd
 
-        # Rimuovere il file dalla storia git
+        {C.blue}--- Annullare l'ultimo commit{C.green}
+        git reset --soft HEAD~1   # Annullare l'ultimo commit mantenendo i file modificati
+        git reset --mixed HEAD~1  # Annullare l'ultimo commit e mantenere i file ma non staged
+        git reset --hard HEAD~1   # Annullare l'ultimo commit scartando tutti i cambiamenti
+
+        {C.blue}--- Rimuovere il file dalla storia git{C.green}
         git filter-branch --tree-filter 'rm -f .pio/build/esp32_littleFS/src/main.cpp.o' HEAD
         # Forzare il push (ATTENZIONE: modifica la storia!)
         git push origin main --force-with-lease
@@ -67,6 +75,7 @@ def helpCommands():
         git checkout V.1.3.2                     [checkout to specific Tag]
         git checkout 7a2b3c4                     [checkout to specific commit]
         git checkout main                        [Tornare all'ultima versione]
+        git tag --sort=-creatordate
 
 
 
