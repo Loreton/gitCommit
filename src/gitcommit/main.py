@@ -97,7 +97,7 @@ def process_git_repo(project: lnDict) -> None:
     logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
     project.commit, project.push = git_status(git_root=project.path, force_log=True)
     if project.push:
-        logger.notify("some commits are pendig to be pushed!!!")
+        logger.notify("WARNING:\nsome commits are pendig to be pushed!!!")
     project.last_tag = get_last_tag(git_root=project.path)
     project.curr_version = project.last_tag.lstrip('v') # type: ignore # skip 'v'
 
@@ -112,10 +112,6 @@ def process_git_repo(project: lnDict) -> None:
             if project.python:
                 project.pyproject.update_version(project.new_version, f_execute=False)
 
-            # manager = ChangeLogManager(git_root=project.path,new_version=project.new_version,last_tag=getattr(git_prj, "last_tag", None))
-            # project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=False) # Preview (dry-run)
-            # project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
-            # logger.info(f"Riepilogo commit: {project.chLogManager.get_summary()}")
 
     logger.debug(f"{C.white}{project.name}:{C.info} {str(project)}")
 
@@ -130,17 +126,12 @@ def process_git_repo(project: lnDict) -> None:
                 perché alcuni file devono essere  modificati
                 (pyproject.toml, o altri)'''
 
-            # if not project.just_commit:
             project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
-                # project.chLogManager.update(new_version=project.new_version, last_tag=project.last_tag, f_execute=True) # Preview (dry-run)
-                # project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
             if project.python and not project.just_commit:
                  project.pyproject.update_version(project.new_version, f_execute=True)
 
-            breakpoint()
             for cmd in cmd_list:
                 lnRun(command=cmd, cwd=project.path, f_execute=True)
-            # devo farlo qui perché deve valutare dopo aver messo il tag
     else:
         logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
     # print("\n\n")

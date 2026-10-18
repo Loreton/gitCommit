@@ -9,14 +9,8 @@
 ## Other
 
 - test#2 per aggiungere di nuovo CHANGELOG.md - (Release 0.1.22) (pylnlib_commit=db5ca18)
-- test#2 per aggiungere di nuovo CHANGELOG.md - (Release 0.1.22) (pylnlib_commit=db5ca18)
 - test per aggiungere di nuovo CHANGELOG.md - (Release 0.1.22) (pylnlib_commit=db5ca18)
 
-## [0.1.22] - 2026-10-18
-
-## Other
-
-- test per aggiungere di nuovo CHANGELOG.md - (Release 0.1.22) (pylnlib_commit=db5ca18)
 
 ## [0.1.19] - 2026-10-17
 
