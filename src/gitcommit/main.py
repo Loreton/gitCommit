@@ -48,11 +48,6 @@ def prepare_cmd_list(project: lnDict) -> list:
     else:
         commit_descr: str= f"{project.description} - (Release {project.new_version})"
 
-    # if project.name == "pyLnLib":
-    #     commit_nr =  "" # non serve mettere il commit_nr di sestesso
-    #     if not project.pylnlib_full_update:
-    #         commit_descr = f"update on {now} (regarding project: {pv.args.project_name})"
-
     cmd_list: list[str] = []
 
     if project.commit:
@@ -85,6 +80,7 @@ def check_pyLnLib(project: lnDict, logger_level: str="warning") -> str:
 #
 #===================================================
 def process_git_repo(project: lnDict) -> None:
+    fExecute = pv.args.go
     logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
     project.commit, project.push = git_status(git_root=project.path, force_log=True)
     if project.push:
@@ -103,10 +99,10 @@ def process_git_repo(project: lnDict) -> None:
                                     new  tag: v{project.new_version}
                                     """)
                                 )
-        project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
+        project.chLogManager.update(new_version=project.new_version, f_execute=fExecute) # Preview (dry-run)
 
         if project.is_python:
-            project.pyproject.update_version(project.new_version, f_execute=False)
+            project.pyproject.update_version(project.new_version, f_execute=fExecute)
     else:
         logger.info(f"no tag change, {project.curr_version = }")
 
@@ -114,23 +110,12 @@ def process_git_repo(project: lnDict) -> None:
     logger.debug(f"{C.white}{project.name}:{C.info} {str(project)}")
 
     cmd_list: list = prepare_cmd_list(project=project)
+    dry_run='' if fExecute else f'{C.yellowH}DRY_RUN - {C.reset}'
     if cmd_list:
         logger.notify(f"=== Command list for {project.name} ===")
         for cmd in cmd_list:
-            logger.info(f"{cmd}")
-        choice=keyboardPrompt(text_msg=f"{C.white}[{project.name}] {C.yellow}enter [--go] [ENTER]=skip", validKeys=["--go", "ENTER"], exitKeys=["x", "q"])
-        if choice[0] == "--go":
-            '''devo di nuovo processare, prima di procedere,
-                perché alcuni file devono essere  modificati
-                (pyproject.toml, o altri)'''
-
-            if project.set_tag:
-                project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
-                if project.is_python:
-                     project.pyproject.update_version(project.new_version, f_execute=True)
-
-            for cmd in cmd_list:
-                lnRun(command=cmd, cwd=project.path, f_execute=True)
+            logger.info(f"{dry_run}{cmd}")
+            lnRun(command=cmd, cwd=project.path, f_execute=fExecute)
     else:
         logger.info("=== %s - no commands to execute ===", project.name, color=C.white)
     # print("\n\n")
@@ -161,6 +146,7 @@ def main():
         sys.exit(0)
 
 
+    fExecute=pv.args.go
     # -----------------------------------------
     # - get project name
     # -----------------------------------------

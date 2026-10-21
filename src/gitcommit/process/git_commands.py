@@ -92,6 +92,9 @@ def git_status(git_root: str, force_log: bool=False)->tuple[bool, bool]:
     commit = True
     push = False
 
+    stdout = stdout.replace('Changes not staged for commit:', f'{C.yellow}Changes not staged for commit:{C.reset}')
+    # stdout = stdout.replace('modified:', f'{C.yellow}modified:{C.reset}')
+    stdout = stdout.replace('Untracked files:', f'{C.yellow}Untracked files:{C.reset}')
     logger.info("git status output:\n%s", stdout, trim_line=True, force_log=force_log)
 
     ###- check git status output
