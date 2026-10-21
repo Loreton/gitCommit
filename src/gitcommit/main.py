@@ -19,8 +19,8 @@ from pyLnLib.system    import lnRun
 from pyLnLib            import keyboardPrompt
 from pyLnLib.files     import zipDir
 from pyLnLib.lndict     import lnDict
-from pyLnLib.git.pyproject_class import PyProjectManager
-from pyLnLib.git.changelog_class import ChangeLogManager
+from pyLnLib.git import PyProjectManager
+from pyLnLib.git import ChangeLogManager
 
 
 from gitcommit import helpCommands
@@ -60,22 +60,13 @@ def prepare_cmd_list(project: lnDict) -> list:
 
         cmd_list.append(f"git commit -m \"{commit_descr}\"")
 
-        # va dopo il commit altrimenti non lo vede per aggiornare il CHANGELOG.md
-        # if not project.just_commit:
-        #     cmd_list.append("git add CHANGELOG.md")
-
-        if project.python and not project.just_commit:
-            cmd_list.append("git add pyproject.toml")
-
+    if pv.args.push:
+        cmd_list.append("git push")
 
     if project.set_tag:
         cmd_list.append(f"git tag -a v{project.new_version} -m \"Release {project.new_version}\"")
         if pv.args.push:
             cmd_list.append("git push --tags")
-
-    if pv.args.push:
-        cmd_list.append("git push")
-
 
     return cmd_list
 
