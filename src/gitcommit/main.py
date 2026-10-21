@@ -89,6 +89,9 @@ def process_git_repo(project: lnDict) -> None:
     project.commit, project.push = git_status(git_root=project.path, force_log=True)
     if project.push:
         logger.notify("WARNING:\nsome commits are pendig to be pushed!!!")
+    if not project.commit:
+        logger.notify("WARNING:\nnothing to commit!!!", exit=True)
+
     project.last_tag = get_last_tag(git_root=project.path)
     project.curr_version = project.last_tag.lstrip('v') # type: ignore # skip 'v'
 
@@ -100,13 +103,12 @@ def process_git_repo(project: lnDict) -> None:
                                     new  tag: v{project.new_version}
                                     """)
                                 )
+        project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
+
+        if project.is_python:
+            project.pyproject.update_version(project.new_version, f_execute=False)
     else:
         logger.info(f"no tag change, {project.curr_version = }")
-
-    project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
-
-    if project.is_python:
-        project.pyproject.update_version(project.new_version, f_execute=False)
 
 
     logger.debug(f"{C.white}{project.name}:{C.info} {str(project)}")
@@ -122,9 +124,10 @@ def process_git_repo(project: lnDict) -> None:
                 perché alcuni file devono essere  modificati
                 (pyproject.toml, o altri)'''
 
-            project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
-            if project.is_python:
-                 project.pyproject.update_version(project.new_version, f_execute=True)
+            if project.set_tag:
+                project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
+                if project.is_python:
+                     project.pyproject.update_version(project.new_version, f_execute=True)
 
             for cmd in cmd_list:
                 lnRun(command=cmd, cwd=project.path, f_execute=True)
@@ -175,7 +178,7 @@ def main():
     if not project:
         logger.error(f"project {project_name} not found in configuration file\n", exit=True)
 
-    # breakpoint()
+    os.chdir(project.path)
     # -----------------------------------------
     # - create pyLnLib.zip if requested
     # -----------------------------------------

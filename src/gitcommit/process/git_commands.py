@@ -110,6 +110,6 @@ def git_status(git_root: str, force_log: bool=False)->tuple[bool, bool]:
     if commit or push:
         logger.debug("commit: %s - Push: %s", commit, push)
     else:
-        logger.debug("no commit necessary!")
+        logger.notify("no commit necessary!")
 
     return commit, push
