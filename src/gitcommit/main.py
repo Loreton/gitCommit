@@ -15,7 +15,7 @@ from pyLnLib.logger    import get_logger
 from pyLnLib.context    import pVars as pv
 from pyLnLib.colors    import get_colors
 from pyLnLib.system    import lnRun
-from pyLnLib            import keyboardPrompt
+from pyLnLib            import clean_doc, keyboardPrompt
 from pyLnLib.files     import zipDir
 from pyLnLib.lndict     import lnDict
 from pyLnLib.git import PyProjectManager
@@ -39,18 +39,19 @@ def prepare_cmd_list(project: lnDict) -> list:
     """preparazione della command list daseguire per aggiornare git project
     """
 
-    now = datetime.now().strftime("%Y.%m.%d")
-    default_description: str= pv.args.description or f"update on {now}" ### force
+    # now = datetime.now().strftime("%Y.%m.%d")
+    # default_description: str= pv.args.description or f"update on {now}" ### force
 
-    pylnlib_commit_nr = check_pyLnLib(pv.config.git_project["pyLnLib"])
-    commit_nr =  f" (pylnlib_commit={pylnlib_commit_nr})"
+    if project.pylnlib_required:
+        pylnlib_commit_nr = check_pyLnLib(pv.config.git_project["pylnlib"])
+        commit_descr: str= f"{project.description} - (Release {project.new_version}) - [{pylnlib_commit_nr = }]"
+    else:
+        commit_descr: str= f"{project.description} - (Release {project.new_version})"
 
-    commit_descr: str= f"{default_description} - (Release {project.new_version}){commit_nr}"
-
-    if project.name == "pyLnLib":
-        commit_nr =  "" # non serve mettere il commit_nr di sestesso
-        if not project.pylnlib_full_update:
-            commit_descr = f"update on {now} (regarding project: {pv.args.project_name})"
+    # if project.name == "pyLnLib":
+    #     commit_nr =  "" # non serve mettere il commit_nr di sestesso
+    #     if not project.pylnlib_full_update:
+    #         commit_descr = f"update on {now} (regarding project: {pv.args.project_name})"
 
     cmd_list: list[str] = []
 
@@ -91,16 +92,21 @@ def process_git_repo(project: lnDict) -> None:
     project.last_tag = get_last_tag(git_root=project.path)
     project.curr_version = project.last_tag.lstrip('v') # type: ignore # skip 'v'
 
-    if not project.just_commit:
-        if check_version(git_prj=project): ### if project.set_tag:
-            logger.notify("=== RELEASE TAG ===")
-            logger.info("last tag: %s", project.last_tag)
-            logger.info("new  tag: v%s", project.new_version)
 
-            project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
+    set_tag = check_version(git_prj=project) ### if project.set_tag:
+    if set_tag:
+        logger.notify(clean_doc(f"""=== RELEASE TAG ===
+                                    last tag: {project.last_tag}
+                                    new  tag: v{project.new_version}
+                                    """)
+                                )
+    else:
+        logger.info(f"no tag change, {project.curr_version = }")
 
-            if project.python:
-                project.pyproject.update_version(project.new_version, f_execute=False)
+    project.chLogManager.update(new_version=project.new_version, f_execute=False) # Preview (dry-run)
+
+    if project.is_python:
+        project.pyproject.update_version(project.new_version, f_execute=False)
 
 
     logger.debug(f"{C.white}{project.name}:{C.info} {str(project)}")
@@ -117,7 +123,7 @@ def process_git_repo(project: lnDict) -> None:
                 (pyproject.toml, o altri)'''
 
             project.chLogManager.update(new_version=project.new_version, f_execute=True) # Preview (dry-run)
-            if project.python and not project.just_commit:
+            if project.is_python:
                  project.pyproject.update_version(project.new_version, f_execute=True)
 
             for cmd in cmd_list:
@@ -153,72 +159,55 @@ def main():
 
 
     # -----------------------------------------
-    # - get current project git_dir (risale alla root del git)
+    # - get project name
     # -----------------------------------------
-    this_git_dir = Path(get_git_root(os.path.curdir))
-    project_dir_name = this_git_dir.name
-    if project_dir_name not in pv.config.git_project:
-        logger.error(f"project {project_dir_name} not found in git_project")
-        logger.notify("please configure it into configuration file.", exit=True)
+    current_dir = Path(get_git_root(os.path.curdir))
+    project_name = current_dir.name
+    if not pv.args.project_name:
+        logger.error("project_name not specified, use --project_name <name>\n", exit=True)
+    elif pv.args.project_name == '.':
+        pass
+    else:
+        project_name = pv.args.project_name
 
+
+    project=pv.config.git_project.get(project_name.lower(), None)
+    if not project:
+        logger.error(f"project {project_name} not found in configuration file\n", exit=True)
+
+    # breakpoint()
     # -----------------------------------------
     # - create pyLnLib.zip if requested
     # -----------------------------------------
     if pv.args.ziplib:
         pyLnLib_path = pv.root_dirs.pyLnLib_dir /  "src/pyLnLib"
-        zipDir(source_dir=pyLnLib_path, output_zip=this_git_dir / "pyLnLib.zip")
+        zipDir(source_dir=pyLnLib_path, output_zip=current_dir / "pyLnLib.zip")
         sys.exit(0)
 
 
     ### -----------------------------
-    ### - crea una list per contenere i nomi dei progetti da processare
+    ### - Verifica se pyLnLibè  necessario
     ### -----------------------------
+    if project.get('pylnlib_required', False):
+        pylnlib=pv.config.git_project["pylnlib"]
+        pylnlib.commit, pylnlib.push = git_status(git_root=pylnlib.path, force_log=True)
+        if pylnlib.commit or pylnlib.push:
+            logger.warning("WARNING: pyLnLib is required and has pending commits or push, please update it first!\n", exit=True)
 
-    projects_name_list: list[str] = [] # lista dei nomi dei progetti da processare
-    project=pv.config.git_project.get(project_dir_name)
-    project.main_dir_name=project_dir_name
-    if project.python:
-        if project.main_dir_name == 'pyLnLib':
-            projects_name_list = [project.main_dir_name]
-            project.pylnlib_full_update=True
-        else:
-            projects_name_list = ['pyLnLib', project.main_dir_name]
-    else:
-        projects_name_list = [project.main_dir_name]
 
     ### -----------------------------
-    ### - - prepara un dict per contenere i progetti da fare commit/push
-    ### - - tutti i flag dello stato saranno modificati a dovere
-    ### - - salva su file, per analisi, i progetti da fare commit/push
-    ### - - pyLnLib comunque compare....
+    ### - Processiamo il progetto
     ### -----------------------------
-    for prj_name in projects_name_list[:]:
-        # - carica progetto
-        project = pv.config.git_project[prj_name]
+    # --- prepara changeLog class object
+    project.chLogManager = ChangeLogManager(git_root=project.path)
 
-        # ----------------------
-        # - modifica il nome della directory del progetto, perché non è detto che sia uguale al nome del progetto
-        # - nel caso di pyLnLib viene aggiornata anche su altri progetti ma viene fatto solo un commit con relativo push
-        # ----------------------
-        project.main_dir_name = project_dir_name
-        if project_dir_name != project.name:
-            project.just_commit=True
+    if project.is_python:
+        # --- prepara pyProject class object per pyproject.toml
+        project.pyproject = PyProjectManager(git_root=project.path)
 
-        # --- prepara changeLog class object
-        project.chLogManager = ChangeLogManager(git_root=project.path)
-
-        if project.python:
-            # --- prepara pyProject class object per pyproject.toml
-            project.pyproject = PyProjectManager(git_root=project.path)
-            print("\n\n")
-            process_git_repo(project)
-            # process_python_git_repo(project)
-
-        else:
-            print("\n\n")
-            process_git_repo(project)
-
-
+    project.description= pv.args.description or f"update on {datetime.now().strftime('%Y.%m.%d %H:%M:%S')}" ### force
+    print("\n\n")
+    process_git_repo(project)
 
     sys.exit("processo completato!")
 

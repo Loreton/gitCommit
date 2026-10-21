@@ -4,10 +4,10 @@
 # ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
-from posixpath import curdir
+# from posixpath import curdir
 import sys
 import argparse
-from pathlib import Path
+# from pathlib import Path
 
 
 ### - pyLnLib modules
@@ -48,7 +48,8 @@ def parseInput():
         # flags.add_argument("--scan", action="store_true", help=f"scan directoried for searching git repositories{v.default}")
         # flags.add_argument("--all", action="store_true", help=f"process all repositories defined in config file {v.default}")
         flags.add_argument("--ziplib", action="store_true", help=f"zip pyLnLib to be saved in git {v.default}")
-        flags.add_argument("--description", metavar='', default=f"update on {now}", type=str, help=f"commit description {v.default}")
+        # flags.add_argument("--description", metavar='', default=f"update on {now}", type=str, help=f"commit description {v.default}")
+        flags.add_argument("--description", metavar='', type=str, help=f"commit description {v.default}")
 
     def git_commands(parser):
         commands=parser.add_argument_group(f'{C.white} --------- git commands{C.reset}')
@@ -66,9 +67,9 @@ def parseInput():
 
 
     # --- main
-    from datetime import datetime
+    # from datetime import datetime
     from types import SimpleNamespace
-    now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+    # now = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
     v=SimpleNamespace(
         default_color=C.yellow,
         metavar_optional=f'{C.white}<optional>{C.reset}',
@@ -76,11 +77,11 @@ def parseInput():
     )
     v.default=f'{v.default_color}(default: %(default)s){C.reset}\n\n'
 
-    this_dir_name = Path(curdir).resolve().name
+    # this_dir_name = Path(curdir).resolve().name
     parser = argparse.ArgumentParser(description=f"Release tool {C.whiteH}{sys.argv[0]}{C.reset}")
     # parser.add_argument("project_name", metavar='', type=str, default=this_dir_name, help=f"project_name | all (default: %(default)s)")
     # parser.add_argument("description", metavar='', nargs="?", default=f"update on {now}", type=str, help="commit description")
-    parser.add_argument("--project-name", metavar='', type=str, help=f"project_name | all (default: %(default)s)")
+    parser.add_argument("--project-name", metavar='', default='.', type=str, help=f"project_name | all (default: %(default)s)")
     git_flags(parser)
     version_flags(parser)
     git_commands(parser)
