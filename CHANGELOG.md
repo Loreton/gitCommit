@@ -1,3 +1,9 @@
+## [0.1.27] - 2026-10-21
+
+## Other
+
+- test#4 per capire CHANGELOG.md - (Release 0.1.26) (pylnlib_commit=af1cdb9)
+
 ## [0.1.24] - 2026-10-18
 
 ## Other

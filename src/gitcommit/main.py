@@ -4,7 +4,6 @@
 # ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
-from logging import getLevelName
 import sys
 import os
 from pathlib import Path
@@ -41,7 +40,7 @@ def prepare_cmd_list(project: lnDict) -> list:
     """
 
     now = datetime.now().strftime("%Y.%m.%d")
-    default_description: str= pv.args.description  or f"update on {now}" ### force
+    default_description: str= pv.args.description or f"update on {now}" ### force
 
     pylnlib_commit_nr = check_pyLnLib(pv.config.git_project["pyLnLib"])
     commit_nr =  f" (pylnlib_commit={pylnlib_commit_nr})"
@@ -51,7 +50,7 @@ def prepare_cmd_list(project: lnDict) -> list:
     if project.name == "pyLnLib":
         commit_nr =  "" # non serve mettere il commit_nr di sestesso
         if not project.pylnlib_full_update:
-            commit_descr = f"update on {now} (regarding project: {pv.args.project})"
+            commit_descr = f"update on {now} (regarding project: {pv.args.project_name})"
 
     cmd_list: list[str] = []
 

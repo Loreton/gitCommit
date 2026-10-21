@@ -48,6 +48,7 @@ def parseInput():
         # flags.add_argument("--scan", action="store_true", help=f"scan directoried for searching git repositories{v.default}")
         # flags.add_argument("--all", action="store_true", help=f"process all repositories defined in config file {v.default}")
         flags.add_argument("--ziplib", action="store_true", help=f"zip pyLnLib to be saved in git {v.default}")
+        flags.add_argument("--description", metavar='', default=f"update on {now}", type=str, help=f"commit description {v.default}")
 
     def git_commands(parser):
         commands=parser.add_argument_group(f'{C.white} --------- git commands{C.reset}')
@@ -75,10 +76,11 @@ def parseInput():
     )
     v.default=f'{v.default_color}(default: %(default)s){C.reset}\n\n'
 
-    this_dir = Path(curdir).resolve().name
+    this_dir_name = Path(curdir).resolve().name
     parser = argparse.ArgumentParser(description=f"Release tool {C.whiteH}{sys.argv[0]}{C.reset}")
-    parser.add_argument("--project", metavar='', type=str, default=this_dir, help=f"project_name | all (default: %(default)s)")
-    parser.add_argument("description", metavar='', nargs="?", default=f"update on {now}", type=str, help="Description")
+    # parser.add_argument("project_name", metavar='', type=str, default=this_dir_name, help=f"project_name | all (default: %(default)s)")
+    # parser.add_argument("description", metavar='', nargs="?", default=f"update on {now}", type=str, help="commit description")
+    parser.add_argument("--project-name", metavar='', type=str, help=f"project_name | all (default: %(default)s)")
     git_flags(parser)
     version_flags(parser)
     git_commands(parser)
