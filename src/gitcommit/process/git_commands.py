@@ -79,7 +79,21 @@ def get_last_tag(git_root: str) -> str|None:
         return None
 
     return None
-
+#     # Costanti per stili aggiuntivi
+#     bold: str = "\033[1m"
+#     underline: str = "\033[4m"
+#     blink: str = "\033[5m"
+#     reverse: str = "\033[7m"
+#     hidden: str = "\033[8m"
+#
+#     # Background colors
+#     bg_red: str = "\033[41m"
+#     bg_green: str = "\033[42m"
+#     bg_yellow: str = "\033[43m"
+#     bg_blue: str = "\033[44m"
+#     bg_magenta: str = "\033[45m"
+#     bg_cyan: str = "\033[46m"
+#     bg_white: str = "\033[47m"
 
 ######################################################
 # read git status and return:
@@ -93,7 +107,7 @@ def git_status(git_root: str, force_log: bool=False)->tuple[bool, bool]:
     push = False
 
     stdout = stdout.replace('Changes not staged for commit:', f'{C.yellow}Changes not staged for commit:{C.reset}')
-    # stdout = stdout.replace('modified:', f'{C.yellow}modified:{C.reset}')
+    stdout = stdout.replace('modified:', f'{C.underline}modified:{C.reset}')
     stdout = stdout.replace('nothing to commit', f'{C.yellow}nothing to commit{C.reset}')
     stdout = stdout.replace('Untracked files:', f'{C.yellow}Untracked files:{C.reset}')
     logger.info("git status output:\n%s\n...", stdout, trim_line=True, force_log=force_log)
