@@ -1,3 +1,10 @@
+## [0.1.29] - 2026-10-22
+
+## Other
+
+- affinamento - (Release 0.1.28) - [pylnlib_commit_nr = '921e303']
+- inseriti --project-name e --descr e ridotta gestione a singolo progetto - (Release 0.1.28) - [pylnlib_commit_nr = '921e303']
+
 ## [0.1.27] - 2026-10-21
 
 ## Other

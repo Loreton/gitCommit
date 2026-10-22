@@ -94,8 +94,9 @@ def git_status(git_root: str, force_log: bool=False)->tuple[bool, bool]:
 
     stdout = stdout.replace('Changes not staged for commit:', f'{C.yellow}Changes not staged for commit:{C.reset}')
     # stdout = stdout.replace('modified:', f'{C.yellow}modified:{C.reset}')
+    stdout = stdout.replace('nothing to commit', f'{C.yellow}nothing to commit{C.reset}')
     stdout = stdout.replace('Untracked files:', f'{C.yellow}Untracked files:{C.reset}')
-    logger.info("git status output:\n%s", stdout, trim_line=True, force_log=force_log)
+    logger.info("git status output:\n%s\n...", stdout, trim_line=True, force_log=force_log)
 
     ###- check git status output
     if "Your branch is ahead of" in stdout or 'use "git push"' in stdout:

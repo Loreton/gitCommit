@@ -84,9 +84,9 @@ def process_git_repo(project: lnDict) -> None:
     logger.info("=== %s - %s ===", project.name, project.path, color=C.whiteH)
     project.commit, project.push = git_status(git_root=project.path, force_log=True)
     if project.push:
-        logger.notify("WARNING:\nsome commits are pendig to be pushed!!!")
+        logger.warning("some commits are pendig to be pushed!!!")
     if not project.commit:
-        logger.notify("WARNING:\nnothing to commit!!!", exit=True)
+        logger.notify("NOTIFY: nothing to commit!!! ...exiting!", exit=True)
 
     project.last_tag = get_last_tag(git_root=project.path)
     project.curr_version = project.last_tag.lstrip('v') # type: ignore # skip 'v'
@@ -198,7 +198,8 @@ def main():
     print("\n\n")
     process_git_repo(project)
 
-    sys.exit("processo completato!")
+    # sys.exit("processo completato!")
+    sys.exit(0)
 
 #################################################################
 #  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -  MAIN -

@@ -3,22 +3,29 @@ main:
     pyLnLib_dir: "$ln_PY_LNLIB_DIR"
     ln_repo_dir: "$ln_GIT_REPO_DIR"
 
+
+
     git_default_flags: &flags
-        # main_dir_name: "no_name"
-        # just_commit: False
-        # name: "no_name"
-        # description: null
         set_tag:       False
         last_tag:       null
         minor:     null
         major:     null
         patch:     null
-        # new_version:  "0.0.0"
         curr_version:  "0.0.0"
         commit:  False
         push:  False
-        # pylnlib_commit_nr:  null
-        # pylnlib_full_update: False
+
+    python_flags: &py_flags
+        <<: *flags
+        pylnlib_required: True
+        is_python: True
+
+    no_python_flags: &no_py_flags
+        <<: *flags
+        pylnlib_required: False
+        is_python: False
+
+
 
 input_args:
 
@@ -27,147 +34,115 @@ git_project:
     pylnlib:
         name: pyLnLib
         path: "${HOME}/filu/Programming/gitREPO/pyLnLib"
-        <<: *flags
-        cmd_list: []
-        is_python: True
+        <<: *py_flags
         pylnlib_required: False
 
     buildpythonproject:
         name: buildPythonProject
         path: "${HOME}/filu/Programming/gitREPO/buildPythonProject"
-        <<: *flags
-        cmd_list: []
-        is_python: True
-        pylnlib_required: True
+        <<: *py_flags
+
 
     gitcommit:
         name: gitCommit
         path: "${HOME}/filu/Programming/gitREPO/gitCommit"
-        <<: *flags
-        cmd_list: []
-        is_python: True
-        pylnlib_required: True
+        <<: *py_flags
+
 
     ebooks:
         name: eBooks
         path: "${HOME}/filu/Programming/gitREPO/eBooks"
-        <<: *flags
-        cmd_list: []
-        is_python: True
-        pylnlib_required: True
+        <<: *py_flags
+
 
     devicemanager:
         name: deviceManager
         path: "${HOME}/filu/Programming/gitREPO/lnDevices/deviceManager"
-        <<: *flags
-        cmd_list: []
-        is_python: True
-        pylnlib_required: True
+        <<: *py_flags
+
 
     lnsync:
         name: lnSync
         path: "${HOME}/filu/Programming/gitREPO/lnSync"
-        <<: *flags
-        cmd_list: []
-        is_python: True
-        pylnlib_required: True
+        <<: *py_flags
+
 
     lnesptool:
         name: lnEsptool
         path: "${HOME}/filu/Programming/gitREPO/lnEsptool"
-        <<: *flags
-        cmd_list: []
-        is_python: False
-        pylnlib_required: True
+        <<: *py_flags
+
 
     presscontrol:
         name: pressControl
         path: "${HOME}/filu/Programming/gitREPO/esp32/pressControl"
-        <<: *flags
-        cmd_list: []
-        is_python: False
-        pylnlib_required: True
+        <<: *py_flags
+
 
     orto_esp32:
         name: orto_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/orto_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
+
 
     lntimesched_esp32:
         name: lnTimeSched_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeSched_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
+
 
     lnlogger_esp32:
         name: lnLogger_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnLogger_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
+
 
     lntimeclock_esp32:
         name: lnTimeClock_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTimeClock_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
+
 
     lntelegram_esp32:
         name: lnTelegram_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegram_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
+
 
     lnwifimanager_esp32:
         name: lnWifiManager_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnWifiManager_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
+
 
     lntelegramsendhttp_esp32:
         name: lnTelegramSendHttp_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnTelegramSendHttp_esp32"
-        <<: *flags
+        <<: *no_py_flags
         cmd_list: []
         is_python: False
 
     lnserialread_esp32:
         name: lnSerialRead_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnSerialRead_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
 
     lnmillistimers_esp32:
         name: lnMillisTimers_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnMillisTimers_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
 
     lnbuttonmanager_esp32:
         name: lnButtonManager_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnButtonManager_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
 
     lncheckpins_esp32:
         name: lnCheckPins_esp32
         path: "${HOME}/filu/Programming/gitREPO/esp32/lnLibraries/lnCheckPins_esp32"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
 
     lnenv:
         name: lnEnv
         path: "${HOME}/filu/lnEnv"
-        <<: *flags
-        cmd_list: []
-        is_python: False
+        <<: *no_py_flags
