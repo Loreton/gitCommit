@@ -140,22 +140,23 @@ def main():
     # -----------------------------------------
     # - list commands if requested
     # -----------------------------------------
-    if pv.args.list_commands:
+    if pv.args.help_commands:
         commands = helpCommands()
         print(f"{C.green}{commands}{C.reset}")
         sys.exit(0)
 
 
-    fExecute=pv.args.go
     # -----------------------------------------
     # - get project name
     # -----------------------------------------
-    current_dir = Path(get_git_root(os.path.curdir))
-    project_name = current_dir.name
     if not pv.args.project_name:
         logger.error("project_name not specified, use --project_name <name>\n", exit=True)
+        return
+
     elif pv.args.project_name == '.':
-        pass
+        current_dir = Path(os.path.curdir).resolve()
+        project_name = current_dir.name
+
     else:
         project_name = pv.args.project_name
 
@@ -164,6 +165,7 @@ def main():
     if not project:
         logger.error(f"project {project_name} not found in configuration file\n", exit=True)
 
+    project.path = Path(get_git_root(project.path))  # mi serve per fare il test del path, se non è un git repo, esce con errore
     os.chdir(project.path)
     # -----------------------------------------
     # - create pyLnLib.zip if requested

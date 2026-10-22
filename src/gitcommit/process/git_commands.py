@@ -3,8 +3,8 @@
 # ruff: noqa I001 - Import block is un-sorted or un-formatted help: Organize imports (Ruff I001)
 #
 
-# import sys
-# sys.dont_write_bytecode = True
+import sys
+sys.dont_write_bytecode = True
 import os
 
 ### - project modules
@@ -15,7 +15,7 @@ logger=get_logger()
 C = get_colors()
 
 
-def _runGitCommand(git_command: str, fExecute: bool = False, cwd: str|None = None) -> tuple[int, str]:
+def _runGitCommand(git_command: str, cwd: str, fExecute: bool = False) -> tuple[int, str]:
     rcode, stdout, stderr = lnRun(git_command, f_execute=fExecute, cwd=cwd, stacklevel=0)
     if rcode != 0:
         logger.error("runGitCommand: failed to run git command: %s", git_command)
@@ -39,10 +39,12 @@ def get_git_root(git_root: str = None) -> str:
     rcode, stdout = _runGitCommand("git rev-parse --show-toplevel", fExecute=True, cwd=git_root)
     if rcode != 0:
         logger.error("get_git_root: path is not a git repository: %s", git_root, exit=True)
+        sys.exit(1)
 
     path = stdout.strip()
     if not is_git_repo(path):
         logger.error("get_git_root: path is not a git repository: %s", path, exit=True)
+        sys.exit(2)
 
     return path
 

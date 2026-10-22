@@ -28,8 +28,8 @@ def parseInput():
         common = parser.add_argument_group(f'{C.white} --------- Common options{C.reset}')
         common.add_argument('--go',            action='store_true', help=f'{C.green}specify if command must be executed. {v.default}')
         common.add_argument('--display-args',  action='store_true', help=f'{C.green}Display arguments {v.default}')
-        common.add_argument("--vars", action="store_true", help="Display project variables")
-        common.add_argument("--edit", action="store_true", help="Edit this script")
+        common.add_argument("--vars", action="store_true", help="Display all project variables")
+        # common.add_argument("--edit", action="store_true", help="Edit this script")
         common.add_argument( "--console-log-level",
                                 metavar='',
                                 type=str.lower,
@@ -44,7 +44,7 @@ def parseInput():
         flags = parser.add_argument_group(f'{C.white} --------- git flags{C.reset}')
         flags.add_argument("--tag", action="store_true", help=f"{v.default}")
         flags.add_argument("--push", action="store_true", help=f"{v.default}")
-        flags.add_argument("--status", action="store_true", help=f"{v.default}")
+        # flags.add_argument("--status", action="store_true", help=f"{v.default}")
         # flags.add_argument("--scan", action="store_true", help=f"scan directoried for searching git repositories{v.default}")
         # flags.add_argument("--all", action="store_true", help=f"process all repositories defined in config file {v.default}")
         flags.add_argument("--ziplib", action="store_true", help=f"zip pyLnLib to be saved in git {v.default}")
@@ -53,9 +53,9 @@ def parseInput():
 
     def git_commands(parser):
         commands=parser.add_argument_group(f'{C.white} --------- git commands{C.reset}')
-        commands.add_argument("--new-branch",  metavar='', default=None, type=str, help="""BR='new_branch' && git branch -b ${BR} && git push gitHub -u ${BR}""")
-        commands.add_argument("--del-branch", action="store_true", help="""BR='old_branch' && git branch --delete ${BR} && git push gitHub --delete ${BR}""")
-        commands.add_argument("--list-commands", action="store_true", help="list of some useful commands.")
+        # commands.add_argument("--new-branch",  metavar='', default=None, type=str, help="""BR='new_branch' && git branch -b ${BR} && git push gitHub -u ${BR}""")
+        # commands.add_argument("--del-branch", action="store_true", help="""BR='old_branch' && git branch --delete ${BR} && git push gitHub --delete ${BR}""")
+        commands.add_argument("--help-commands", action="store_true", help="list of some useful commands.")
 
     def version_flags(parser):
         group=parser.add_argument_group(f'{C.white} --------- release options{C.reset}')
@@ -97,9 +97,9 @@ def parseInput():
 
 
 
-    elif args.new_branch:
-        sys.exit(f'git checkout -b "{args.new_branch}" && git push -u gitHub "{args.new_branch}"')
-    elif args.del_branch:
-        sys.exit(f'git checkout -b "{args.del_branch}" && git push -u gitHub --delete "{args.del_branch}"')
+    # elif args.new_branch:
+    #     sys.exit(f'git checkout -b "{args.new_branch}" && git push -u gitHub "{args.new_branch}"')
+    # elif args.del_branch:
+    #     sys.exit(f'git checkout -b "{args.del_branch}" && git push -u gitHub --delete "{args.del_branch}"')
 
     return args
