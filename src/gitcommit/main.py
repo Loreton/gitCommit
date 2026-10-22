@@ -145,6 +145,14 @@ def main():
         print(f"{C.green}{commands}{C.reset}")
         sys.exit(0)
 
+    # -----------------------------------------
+    # - list list-projects
+    # -----------------------------------------
+    if pv.args.list_projects:
+        for _, project in pv.config.git_project.items():
+            print(f"\t{C.cyanH}{project.name:30}{C.green}{project.path}{C.reset}")
+        sys.exit(0)
+
 
     # -----------------------------------------
     # - get project name

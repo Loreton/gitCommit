@@ -29,7 +29,7 @@ def parseInput():
         common.add_argument('--go',            action='store_true', help=f'{C.green}specify if command must be executed. {v.default}')
         common.add_argument('--display-args',  action='store_true', help=f'{C.green}Display arguments {v.default}')
         common.add_argument("--vars", action="store_true", help="Display all project variables")
-        # common.add_argument("--edit", action="store_true", help="Edit this script")
+        # common.add_argument("--edit", act.ion="store_true", help="Edit this script")
         common.add_argument( "--console-log-level",
                                 metavar='',
                                 type=str.lower,
@@ -55,7 +55,8 @@ def parseInput():
         commands=parser.add_argument_group(f'{C.white} --------- git commands{C.reset}')
         # commands.add_argument("--new-branch",  metavar='', default=None, type=str, help="""BR='new_branch' && git branch -b ${BR} && git push gitHub -u ${BR}""")
         # commands.add_argument("--del-branch", action="store_true", help="""BR='old_branch' && git branch --delete ${BR} && git push gitHub --delete ${BR}""")
-        commands.add_argument("--help-commands", action="store_true", help="list of some useful commands.")
+        commands.add_argument("--help-commands", action="store_true", help="list of some useful commands")
+        commands.add_argument("--list-projects", action="store_true", help="list projects names")
 
     def version_flags(parser):
         group=parser.add_argument_group(f'{C.white} --------- release options{C.reset}')
